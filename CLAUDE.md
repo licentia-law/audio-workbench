@@ -34,7 +34,7 @@
 - Tailwind CSS
 - Zustand (전역 상태)
 - React Router v6
-- WaveSurfer.js (파형 렌더링 — P1에서 연결)
+- WaveSurfer.js (파형 렌더링 — P1 연결 완료)
 
 ### Backend (port 8000)
 - Python 3.11+ / FastAPI / Uvicorn
@@ -79,12 +79,13 @@ audio-workbench/
 ├─ frontend/src/
 │  ├─ pages/              # 5개 페이지 (CutPage, AnalyzePage, KeyShiftPage, AmplifyPage, StemMixPage)
 │  ├─ components/
-│  │  ├─ layout/          # AppSidebar, PageHeader, AppLayout
+│  │  ├─ layout/          # AppSidebar, PageHeader, AppLayout, ProcessingPageShell
 │  │  ├─ upload/          # FileUploadCard
-│  │  ├─ player/          # PrimaryPlayer (P1 예정)
-│  │  ├─ waveform/        # WaveformPanel (P1 예정)
-│  │  ├─ feedback/        # StatusBadge
-│  │  └─ result/          # FileMetaCard, ResultFileCard (P1 예정)
+│  │  ├─ player/          # PrimaryPlayer
+│  │  ├─ waveform/        # WaveformPanel
+│  │  ├─ feedback/        # StatusBadge, InfoMessageCard
+│  │  └─ result/          # FileMetaCard, ResultFileCard, DownloadButton
+│  ├─ hooks/              # useAudioPlayer, useProcessingPage
 │  ├─ services/api.ts     # fetch 래퍼, 공통 에러 핸들링
 │  ├─ stores/fileStore.ts # Zustand 전역 파일 상태
 │  └─ types/index.ts      # 공통 타입
@@ -145,13 +146,15 @@ empty → uploaded → processing → success
 | AppSidebar | components/layout/ | ✅ P0 완료 |
 | PageHeader | components/layout/ | ✅ P0 완료 |
 | AppLayout | components/layout/ | ✅ P0 완료 |
+| ProcessingPageShell | components/layout/ | ✅ P1 완료 |
 | FileUploadCard | components/upload/ | ✅ P0 완료 |
 | FileMetaCard | components/result/ | ✅ P0 완료 |
 | StatusBadge | components/feedback/ | ✅ P0 완료 |
-| PrimaryPlayer | components/player/ | 🔲 P1 예정 |
-| WaveformPanel | components/waveform/ | 🔲 P1 예정 |
-| ResultFileCard | components/result/ | 🔲 P1 예정 |
-| DownloadButton | components/result/ | 🔲 P1 예정 |
+| InfoMessageCard | components/feedback/ | ✅ P1 완료 |
+| PrimaryPlayer | components/player/ | ✅ P1 완료 |
+| WaveformPanel | components/waveform/ | ✅ P1 완료 |
+| ResultFileCard | components/result/ | ✅ P1 완료 |
+| DownloadButton | components/result/ | ✅ P1 완료 |
 
 ---
 
@@ -160,7 +163,7 @@ empty → uploaded → processing → success
 | 단계 | 내용 | 상태 |
 |---|---|---|
 | P0 | 공통 기반 구조 (백엔드 API + 프론트 스캐폴딩) | ✅ 완료 |
-| P1 | 공통 오디오 UX (Player, WaveformPanel, 상태 전환 프레임) | 🔲 |
+| P1 | 공통 오디오 UX (Player, WaveformPanel, 상태 전환 프레임) | ✅ 완료 |
 | P2 | 1페이지: 음원 자르기 | 🔲 |
 | P3 | 2페이지: 음원 분석 | 🔲 |
 | P4 | 3페이지: Key 변환 | 🔲 |

@@ -1,5 +1,18 @@
+# Web framework
 fastapi>=0.111.0
 uvicorn[standard]>=0.29.0
 python-multipart>=0.0.9
 pydantic>=2.7.0
 pydantic-settings>=2.2.0
+
+# Audio analysis (P3: 음원 분석)
+librosa>=0.11.0
+
+# Stem separation (P6: 스템 분리)
+demucs>=4.0.1
+
+# Key shift wrapper (P4: Key 변환)
+# pyrubberband은 Rubber Band CLI 바이너리가 PATH에 있어야 동작함
+# 바이너리 설치: https://breakfastquay.com/rubberband/
+pyrubberband>=0.4.0
+soundfile>=0.12.1

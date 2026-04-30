@@ -1,4 +1,4 @@
-import type { ApiResponse, FileMeta } from '../types'
+import type { ApiResponse, FileMeta, CutResult } from '../types'
 
 const BASE = '/api'
 
@@ -31,5 +31,13 @@ export const apiService = {
 
   async deleteSession(sessionId: string): Promise<void> {
     await request(`/session/${sessionId}`, { method: 'DELETE' })
+  },
+
+  async cut(fileId: string, params: { start_sec: number; end_sec: number }): Promise<CutResult> {
+    return request<CutResult>('/cut', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file_id: fileId, ...params }),
+    })
   },
 }

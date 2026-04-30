@@ -14,3 +14,7 @@ def sanitize_base_name(name: str) -> str:
 def with_suffix(original_name: str, suffix: str) -> str:
     base = sanitize_base_name(original_name)
     return f"{base}({suffix}).mp3"
+
+
+def cut_filename(original_name: str) -> str:
+    return with_suffix(original_name, "cut")

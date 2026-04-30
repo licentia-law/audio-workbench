@@ -13,3 +13,15 @@ export interface ApiResponse<T = unknown> {
   data: T | null
   error: { code: string } | null
 }
+
+export interface TrimSelection {
+  startSec: number
+  endSec: number
+}
+
+export interface CutResult {
+  artifact_id: string
+  suggested_filename: string
+  duration_seconds: number
+  size_bytes: number
+}

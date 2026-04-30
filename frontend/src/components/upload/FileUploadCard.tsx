@@ -2,12 +2,17 @@ import { useRef, useState, type DragEvent, type ChangeEvent } from 'react'
 import { StatusBadge } from '../feedback/StatusBadge'
 import { useFileStore } from '../../stores/fileStore'
 import { apiService } from '../../services/api'
-import type { UploadStatus } from '../../types'
+import type { FileMeta, UploadStatus } from '../../types'
 
 const MAX_SIZE_BYTES = 20 * 1024 * 1024
 const MAX_DURATION_SEC = 600
 
-export function FileUploadCard() {
+interface FileUploadCardProps {
+  onSuccess?: (meta: FileMeta) => void
+  onError?: (message: string) => void
+}
+
+export function FileUploadCard({ onSuccess, onError }: FileUploadCardProps = {}) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [status, setStatus] = useState<UploadStatus>('empty')
@@ -39,13 +44,16 @@ export function FileUploadCard() {
     if (validationError) {
       setStatus('error')
       setErrorMsg(validationError)
+      onError?.(validationError)
       return
     }
 
     const durationOk = await checkDuration(file)
     if (!durationOk) {
+      const msg = '파일 길이는 10분 이하여야 합니다.'
       setStatus('error')
-      setErrorMsg('파일 길이는 10분 이하여야 합니다.')
+      setErrorMsg(msg)
+      onError?.(msg)
       return
     }
 
@@ -54,9 +62,12 @@ export function FileUploadCard() {
       const result = await apiService.upload(file)
       setUploadedFile(result)
       setStatus('uploaded')
+      onSuccess?.(result)
     } catch (err) {
+      const msg = err instanceof Error ? err.message : '업로드에 실패했습니다.'
       setStatus('error')
-      setErrorMsg(err instanceof Error ? err.message : '업로드에 실패했습니다.')
+      setErrorMsg(msg)
+      onError?.(msg)
     }
   }
 

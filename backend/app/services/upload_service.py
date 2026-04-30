@@ -43,6 +43,13 @@ class UploadService:
             "duration_seconds": duration,
         }
 
+    def get_audio_path(self, file_id: str) -> Optional[Path]:
+        meta = self._meta_store.get(file_id)
+        if meta is None:
+            return None
+        path = Path(meta["path"])
+        return path if path.exists() else None
+
     def get_meta(self, file_id: str) -> Optional[dict]:
         meta = self._meta_store.get(file_id)
         if not meta:

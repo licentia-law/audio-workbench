@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>Audio Adjuster — 음량 증폭 / 상세 시안</title>
+<meta name="viewport" content="width=1440" />
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        },
+        colors: {
+          ink: {
+            900: '#070B18',
+            850: '#0B1020',
+            800: '#0F1428',
+            700: '#141A2E',
+            600: '#1A2138',
+            500: '#222B47',
+            400: '#2C3656',
+            300: '#3A4670',
+          },
+          line: '#1F2742',
+          line2: '#2A3354',
+          fg: {
+            DEFAULT: '#E6ECFF',
+            dim: '#A8B0CF',
+            mute: '#6E769B',
+            faint: '#4A5377',
+          },
+          brand: {
+            cyan: '#5EE6D6',
+            cyanDeep: '#2DBEAE',
+            cyanGlow: 'rgba(94,230,214,0.18)',
+            indigo: '#7C8CFF',
+            amber: '#F2B544',
+            green: '#3FCF8E',
+            red:   '#F46E7A',
+          },
+          play: '#FFB347',
+          ok:   '#3FCF8E',
+          warn: '#F2B544',
+          err:  '#F46E7A',
+        },
+        boxShadow: {
+          card: '0 1px 0 rgba(255,255,255,0.03) inset, 0 12px 30px -18px rgba(0,0,0,0.7)',
+          handle: '0 0 0 1px rgba(94,230,214,0.6), 0 6px 18px -6px rgba(94,230,214,0.45)',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  html, body { background: #070B18; color: #E6ECFF; }
+  body { font-family: 'Inter', system-ui, sans-serif; }
+  .num { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  .doc-bg {
+    background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+  .stripe {
+    background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0 6px, transparent 6px 12px);
+  }
+  .nice-scroll::-webkit-scrollbar { height: 8px; }
+  .nice-scroll::-webkit-scrollbar-thumb { background: #2A3354; border-radius: 8px; }
+  .nice-scroll::-webkit-scrollbar-track { background: transparent; }
+  .frame-1440 { width: 1440px; margin: 0 auto; }
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display:none; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<div id="root"></div>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="amp-icons.jsx"></script>
+<script type="text/babel" src="amp-mock.jsx"></script>
+<script type="text/babel" src="amp-waveform.jsx"></script>
+<script type="text/babel" src="amp-controls.jsx"></script>
+<script type="text/babel" src="amp-results.jsx"></script>
+<script type="text/babel" src="amp-doc-primitives.jsx"></script>
+<script type="text/babel" src="amp-doc-content.jsx"></script>
+<script type="text/babel" src="amp-doc-content2.jsx"></script>
+<script type="text/babel" src="amp-code-1-tree.jsx"></script>
+<script type="text/babel" src="amp-code-2-types.jsx"></script>
+<script type="text/babel" src="amp-code-3-page.jsx"></script>
+<script type="text/babel" src="amp-code-4-hooks.jsx"></script>
+<script type="text/babel" src="amp-code-5-comp.jsx"></script>
+<script type="text/babel" src="amp-app.jsx"></script>
+</body>
+</html>
