@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m venv .venv)",
+      "Bash(powershell -Command \"Remove-Item -Recurse -Force 'C:\\\\Users\\\\mycho\\\\Downloads\\\\_Licentia\\\\Coding\\\\audio-workbench\\\\backend\\\\.venv' -ErrorAction SilentlyContinue; Write-Host '삭제 완료'\")",
+      "Bash(npm --version)",
+      "Bash(npm install *)",
+      "Bash(npm audit *)",
+      "Bash(.venv/Scripts/python.exe -c ' *)"
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install*)",
+      "Bash(npm run dev*)",
+      "Bash(npm run build*)",
+      "Bash(npm run lint*)",
+      "Bash(npm run type-check*)",
+      "Bash(npx tsc*)",
+      "Bash(pip install*)",
+      "Bash(pip show*)",
+      "Bash(python -m uvicorn*)",
+      "Bash(python -m pytest*)",
+      "Bash(python -m venv*)",
+      "Bash(uvicorn*)",
+      "Bash(ffprobe*)",
+      "Bash(ffmpeg*)",
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(powershell -File scripts/run_backend.ps1*)",
+      "Bash(powershell -File scripts/run_frontend.ps1*)",
+      "Bash(powershell -File scripts/session_context.ps1*)"
+    ]
+  }
+}
