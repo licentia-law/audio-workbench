@@ -5,6 +5,8 @@ export interface FileMeta {
   original_name: string
   size_bytes: number
   duration_seconds: number
+  sample_rate?: number | null
+  bit_rate?: number | null
 }
 
 export interface ApiResponse<T = unknown> {

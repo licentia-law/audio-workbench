@@ -1,5 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 import type { UploadStatus, CutResult } from '../../types'
+import { Icon } from '../icons/Icon'
+import { Badge } from '../feedback/Badge'
 
 function fmt(t: number): string {
   if (isNaN(t) || t < 0) return '--:--'
@@ -40,23 +42,6 @@ function MiniWave() {
   )
 }
 
-function Badge({ tone, children }: { tone: string; children: React.ReactNode }) {
-  const tones: Record<string, string> = {
-    ok: 'bg-ok/12 text-ok border-ok/30',
-    warn: 'bg-warn/12 text-warn border-warn/30',
-    err: 'bg-err/12 text-err border-err/30',
-    cyan: 'bg-brand-cyan/12 text-brand-cyan border-brand-cyan/30',
-    mute: 'bg-ink-600 text-fg-mute border-line/60',
-  }
-  return (
-    <span
-      className={`inline-flex items-center gap-1 px-2 h-[22px] rounded-md border text-[11.5px] font-medium ${tones[tone] ?? tones.mute}`}
-    >
-      {children}
-    </span>
-  )
-}
-
 export function ResultCard({ state, result, errorMsg, onRetry }: ResultCardProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [playing, setPlaying] = useState(false)
@@ -92,9 +77,13 @@ export function ResultCard({ state, result, errorMsg, onRetry }: ResultCardProps
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <span className="text-[14px] font-semibold tracking-tight text-fg">자르기 결과</span>
-        {state === 'success' && <Badge tone="ok">✓ 처리 완료</Badge>}
+        {state === 'success' && (
+          <Badge tone="ok"><Icon name="check" className="w-3 h-3" />처리 완료</Badge>
+        )}
         {state === 'processing' && <Badge tone="cyan">처리 중…</Badge>}
-        {state === 'error' && <Badge tone="err">✕ 실패</Badge>}
+        {state === 'error' && (
+          <Badge tone="err"><Icon name="error" className="w-3 h-3" />실패</Badge>
+        )}
         {(state === 'empty' || state === 'uploaded') && <Badge tone="mute">대기</Badge>}
       </div>
 
@@ -102,24 +91,17 @@ export function ResultCard({ state, result, errorMsg, onRetry }: ResultCardProps
       {state === 'success' && result && (
         <div className="space-y-3">
           <div className="grid items-center gap-4" style={{ gridTemplateColumns: '1fr 144px' }}>
-            <div className="flex items-center gap-3 rounded-xl bg-ink-800 border border-line/50 px-3 py-2.5">
+            <div className="flex items-center gap-3 rounded-xl bg-ink-800 border border-line2/50 px-3 py-3">
               <button
+                type="button"
                 onClick={togglePlay}
-                className="w-10 h-10 rounded-full bg-brand-cyan text-ink-800 grid place-items-center hover:bg-brand-cyanDeep flex-shrink-0"
+                className="w-10 h-10 rounded-full bg-brand-cyan text-ink-850 grid place-items-center hover:bg-brand-cyan/90 flex-shrink-0 transition-colors"
+                aria-label={playing ? '일시정지' : '재생'}
               >
-                {playing ? (
-                  <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
-                    <rect x="3" y="3" width="4" height="10" rx="0.5" />
-                    <rect x="9" y="3" width="4" height="10" rx="0.5" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
-                    <path d="M4 2.5l10 5.5-10 5.5V2.5z" />
-                  </svg>
-                )}
+                <Icon name={playing ? 'pause' : 'play'} className="w-4 h-4" />
               </button>
               <div className="min-w-0 flex-shrink-0">
-                <div className="text-[13px] font-semibold truncate max-w-[140px] text-fg">
+                <div className="text-[13.5px] font-semibold truncate max-w-[180px] text-fg" dir="ltr">
                   {result.suggested_filename}
                 </div>
                 <div className="text-[11.5px] text-fg-mute font-mono">
@@ -127,16 +109,14 @@ export function ResultCard({ state, result, errorMsg, onRetry }: ResultCardProps
                 </div>
               </div>
               <MiniWave />
+              <Icon name="speaker" className="w-4 h-4 text-fg-mute shrink-0" />
             </div>
             <a
               href={downloadUrl}
               download={result.suggested_filename}
               className="h-12 rounded-lg border border-brand-cyan/60 text-brand-cyan hover:bg-brand-cyan/10 inline-flex items-center justify-center gap-2 font-medium text-[13.5px] transition-colors"
             >
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
-                <path d="M8 2v9M4.5 7.5L8 11l3.5-3.5" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 13h12" strokeLinecap="round" />
-              </svg>
+              <Icon name="download" className="w-4 h-4" />
               다운로드
             </a>
           </div>
@@ -162,10 +142,7 @@ export function ResultCard({ state, result, errorMsg, onRetry }: ResultCardProps
       {/* Uploaded */}
       {state === 'uploaded' && (
         <div className="py-6 flex items-center gap-3 text-fg-mute text-[13px]">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 flex-shrink-0">
-            <circle cx="8" cy="8" r="6" />
-            <path d="M8 5v3.5M8 11v.5" strokeLinecap="round" />
-          </svg>
+          <Icon name="info" className="w-4 h-4 shrink-0" />
           [자르기 실행]을 눌러 결과를 생성하세요.
         </div>
       )}
@@ -173,10 +150,7 @@ export function ResultCard({ state, result, errorMsg, onRetry }: ResultCardProps
       {/* Empty */}
       {state === 'empty' && (
         <div className="py-6 flex items-center gap-3 text-fg-mute text-[13px]">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 flex-shrink-0">
-            <circle cx="8" cy="8" r="6" />
-            <path d="M8 5v3.5M8 11v.5" strokeLinecap="round" />
-          </svg>
+          <Icon name="info" className="w-4 h-4 shrink-0" />
           파일을 업로드하면 자르기 결과가 이곳에 표시됩니다.
         </div>
       )}
@@ -185,17 +159,16 @@ export function ResultCard({ state, result, errorMsg, onRetry }: ResultCardProps
       {state === 'error' && (
         <div className="py-2">
           <div className="flex items-center gap-2 text-err text-[13px] font-medium mb-2">
-            <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 flex-shrink-0">
-              <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM7 5h2v5H7V5zm0 6h2v2H7v-2z" />
-            </svg>
+            <Icon name="error" className="w-4 h-4 shrink-0" />
             처리에 실패했습니다.
           </div>
           <div className="text-[12.5px] text-fg-dim leading-relaxed">
             {errorMsg ?? '자르기 처리에 실패했습니다. 다른 파일로 다시 시도해 주세요.'}
           </div>
           <button
+            type="button"
             onClick={onRetry}
-            className="mt-3 h-9 px-3 rounded-md border border-line/80 text-fg hover:bg-ink-600 text-[12.5px] transition-colors"
+            className="mt-3 h-9 px-3 rounded-md border border-line2 text-fg hover:bg-ink-600 text-[12.5px] transition-colors"
           >
             다시 시도
           </button>

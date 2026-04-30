@@ -8,6 +8,9 @@ import { SelectionInfo } from '../../components/trim/SelectionInfo'
 import { ControlBar } from '../../components/trim/ControlBar'
 import { ResultCard } from '../../components/trim/ResultCard'
 import { GuidanceCard } from '../../components/trim/GuidanceCard'
+import { PageHeader } from '../../components/layout/PageHeader'
+import { Icon } from '../../components/icons/Icon'
+import { Badge } from '../../components/feedback/Badge'
 import type { FileMeta, UploadStatus, CutResult } from '../../types'
 
 // ── Upload section ──────────────────────────────────────────────────────────
@@ -18,6 +21,27 @@ interface UploadSectionProps {
   errorMsg: string | null
   onUploadSuccess: (meta: FileMeta) => void
   onUploadError: (msg: string) => void
+  onClear: () => void
+}
+
+function formatBytes(b: number) {
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`
+  return `${(b / (1024 * 1024)).toFixed(2)} MB`
+}
+
+function formatDuration(s: number) {
+  const m = Math.floor(s / 60)
+  return `${m}:${Math.floor(s % 60).toString().padStart(2, '0')}`
+}
+
+function formatSampleRate(hz: number | null | undefined) {
+  if (!hz) return '—'
+  return `${(hz / 1000).toFixed(1)} kHz`
+}
+
+function formatBitrate(bps: number | null | undefined) {
+  if (!bps) return '—'
+  return `${Math.round(bps / 1000)} kbps`
 }
 
 function UploadSection({
@@ -26,22 +50,14 @@ function UploadSection({
   errorMsg,
   onUploadSuccess,
   onUploadError,
+  onClear,
 }: UploadSectionProps) {
-  const { setUploadedFile } = useFileStore()
+  const { setUploadedFile, reset: resetStore } = useFileStore()
   const [isDragging, setIsDragging] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
 
   const MAX_SIZE = 20 * 1024 * 1024
   const MAX_DURATION = 600
-
-  function formatBytes(b: number) {
-    return b < 1024 * 1024 ? `${(b / 1024).toFixed(1)} KB` : `${(b / (1024 * 1024)).toFixed(2)} MB`
-  }
-
-  function formatDuration(s: number) {
-    const m = Math.floor(s / 60)
-    return `${m}:${Math.floor(s % 60).toString().padStart(2, '0')}`
-  }
 
   async function checkDuration(file: File): Promise<boolean> {
     return new Promise((resolve) => {
@@ -90,16 +106,25 @@ function UploadSection({
   }
 
   const displayError = localError || (pageStatus === 'error' ? errorMsg : null)
+  const uploaded = !!uploadedFile
+
+  function handleClear() {
+    setLocalError(null)
+    resetStore()
+    onClear()
+  }
 
   return (
     <div className="rounded-2xl border border-line bg-ink-700 shadow-card p-5">
-      <div className="flex gap-5">
-        {/* Dropzone */}
+      <div className="grid" style={{ gridTemplateColumns: '380px 1fr' }}>
+        {/* Drop zone */}
         <div
-          className={`w-[360px] flex-shrink-0 rounded-xl border-2 border-dashed p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors ${
-            isDragging
-              ? 'border-brand-cyan bg-brand-cyan/5'
-              : 'border-line/80 hover:border-brand-cyan/50'
+          className={`relative rounded-xl px-5 py-6 flex flex-col items-center justify-center text-center min-h-[140px] cursor-pointer transition-colors ${
+            uploaded
+              ? 'border border-line2 border-dashed'
+              : isDragging
+                ? 'border border-dashed border-brand-cyan bg-brand-cyan/10'
+                : 'border border-dashed border-brand-cyan/40 bg-brand-cyan/5 hover:bg-brand-cyan/10'
           }`}
           onClick={() => document.getElementById('cut-file-input')?.click()}
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
@@ -111,14 +136,26 @@ function UploadSection({
             if (file) handleFile(file)
           }}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8 text-fg-mute">
-            <path d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <p className="text-sm text-fg-dim text-center">
-            mp3 파일을 드래그하거나{' '}
-            <span className="text-brand-cyan font-medium">클릭하여 선택</span>하세요
-          </p>
-          <p className="text-xs text-fg-mute">최대 20MB / 10분 이하</p>
+          <div
+            className={`w-9 h-9 rounded-full grid place-items-center mb-2 ${
+              uploaded ? 'bg-ink-600 text-fg-mute' : 'bg-brand-cyan/15 text-brand-cyan'
+            }`}
+          >
+            <Icon name="upload" className="w-4 h-4" />
+          </div>
+          <div className="text-[13.5px] text-fg">오디오 파일을 드래그&드롭 하세요</div>
+          <div className="text-[11.5px] text-fg-mute my-1">또는</div>
+          <button
+            type="button"
+            className="px-3.5 h-8 rounded-md bg-brand-cyan text-ink-850 text-[12.5px] font-semibold hover:bg-brand-cyan/90 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation()
+              document.getElementById('cut-file-input')?.click()
+            }}
+          >
+            파일 선택
+          </button>
+          <div className="text-[11px] text-fg-mute mt-2.5">지원 형식: MP3 · 최대 10분 · 20MB</div>
         </div>
 
         <input
@@ -134,38 +171,61 @@ function UploadSection({
         />
 
         {/* File meta */}
-        <div className="flex-1 min-w-0">
-          {uploadedFile ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 px-2 h-[22px] rounded-md border text-[11.5px] font-medium bg-ok/12 text-ok border-ok/30">
-                  ✓ 업로드 완료
-                </span>
-              </div>
-              <dl className="space-y-2">
-                {[
-                  { label: '파일명', value: uploadedFile.original_name },
-                  { label: '길이', value: formatDuration(uploadedFile.duration_seconds) },
-                  { label: '용량', value: formatBytes(uploadedFile.size_bytes) },
-                ].map(({ label, value }) => (
-                  <div key={label} className="flex justify-between text-sm">
-                    <dt className="text-fg-mute">{label}</dt>
-                    <dd className="text-fg font-medium truncate max-w-[220px] text-right">{value}</dd>
-                  </div>
-                ))}
-              </dl>
+        <div className="pl-6 flex items-center">
+          {!uploaded ? (
+            <div className="w-full text-fg-mute text-[13px] flex items-center gap-2">
+              <Icon name="info" className="w-4 h-4" />
+              업로드된 파일이 없습니다.
             </div>
           ) : (
-            <div className="flex items-center h-full text-fg-mute text-sm">
-              파일을 업로드하면 정보가 표시됩니다.
+            <div className="w-full">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-12 rounded-md bg-gradient-to-b from-ink-500 to-ink-600 border border-line2 grid place-items-center">
+                  <span className="text-[10px] text-brand-cyan font-mono font-semibold">MP3</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2.5">
+                    <div className="text-[16px] font-semibold tracking-tight truncate">
+                      {uploadedFile.original_name}
+                    </div>
+                    <Badge tone="ok">
+                      <Icon name="check" className="w-3 h-3" />
+                      업로드 완료
+                    </Badge>
+                  </div>
+                  <div className="text-[12px] text-fg-mute mt-0.5">방금 업로드됨</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  className="w-9 h-9 grid place-items-center rounded-md border border-line2 text-fg-mute hover:text-err hover:border-err/50 transition-colors"
+                  aria-label="파일 제거"
+                >
+                  <Icon name="trash" className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="grid grid-cols-5 gap-3">
+                {[
+                  ['길이', formatDuration(uploadedFile.duration_seconds)],
+                  ['크기', formatBytes(uploadedFile.size_bytes)],
+                  ['형식', 'MP3'],
+                  ['샘플레이트', formatSampleRate(uploadedFile.sample_rate)],
+                  ['비트레이트', formatBitrate(uploadedFile.bit_rate)],
+                ].map(([k, v]) => (
+                  <div key={k} className="rounded-lg bg-ink-800 border border-line2/50 px-3 py-2">
+                    <div className="text-[11px] text-fg-mute">{k}</div>
+                    <div className="text-[14px] font-medium font-mono mt-0.5">{v}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-          )}
-
-          {displayError && (
-            <p className="mt-3 text-xs text-err bg-err/10 rounded-lg px-3 py-2">{displayError}</p>
           )}
         </div>
       </div>
+
+      {displayError && (
+        <p className="mt-4 text-xs text-err bg-err/10 rounded-lg px-3 py-2">{displayError}</p>
+      )}
     </div>
   )
 }
@@ -213,6 +273,14 @@ export function CutPage() {
     setPageStatus('error')
   }, [])
 
+  const handleClear = useCallback(() => {
+    playback.stop()
+    setPeaks(undefined)
+    setResult(null)
+    setErrorMsg(null)
+    setPageStatus('empty')
+  }, [playback])
+
   async function handleCut() {
     if (!uploadedFile) return
     if (pageStatus !== 'success' && pageStatus !== 'error' && !canCut) return
@@ -237,11 +305,7 @@ export function CutPage() {
 
   return (
     <div className="space-y-5 max-w-[1220px]">
-      {/* Page Header */}
-      <div>
-        <h2 className="text-2xl font-semibold text-fg tracking-tight">음원 자르기</h2>
-        <p className="mt-1 text-sm text-fg-mute">원하는 구간만 선택하여 잘라낼 수 있습니다.</p>
-      </div>
+      <PageHeader title="음원 자르기" description="원하는 구간만 선택하여 잘라낼 수 있습니다." />
 
       {/* Upload + Meta */}
       <UploadSection
@@ -250,6 +314,7 @@ export function CutPage() {
         errorMsg={errorMsg}
         onUploadSuccess={handleUploadSuccess}
         onUploadError={handleUploadError}
+        onClear={handleClear}
       />
 
       {/* Waveform */}
@@ -262,6 +327,8 @@ export function CutPage() {
         state={pageStatus}
         onChange={sel.set}
         onSeek={playback.seek}
+        volume={playback.volume}
+        onVolumeChange={playback.setVolume}
       />
 
       {/* Selection Info */}

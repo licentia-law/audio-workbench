@@ -4,6 +4,7 @@ export function useTrimPlayback(audioSrc: string | undefined) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [currentSec, setCurrentSec] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [volume, setVolumeState] = useState(0.75)
   const stopAtRef = useRef<number | null>(null)
 
   useEffect(() => {
@@ -16,6 +17,7 @@ export function useTrimPlayback(audioSrc: string | undefined) {
     }
 
     const a = new Audio(audioSrc)
+    a.volume = volume
     audioRef.current = a
 
     a.ontimeupdate = () => {
@@ -36,11 +38,13 @@ export function useTrimPlayback(audioSrc: string | undefined) {
       a.pause()
       a.src = ''
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioSrc])
 
   return {
     currentSec,
     isPlaying,
+    volume,
     playFrom(from: number, until?: number) {
       const a = audioRef.current
       if (!a) return
@@ -55,6 +59,12 @@ export function useTrimPlayback(audioSrc: string | undefined) {
     seek(t: number) {
       const a = audioRef.current
       if (a) a.currentTime = t
+    },
+    setVolume(v: number) {
+      const clamped = Math.max(0, Math.min(1, v))
+      setVolumeState(clamped)
+      const a = audioRef.current
+      if (a) a.volume = clamped
     },
   }
 }

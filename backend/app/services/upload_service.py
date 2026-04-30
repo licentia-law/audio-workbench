@@ -20,11 +20,12 @@ class UploadService:
         dest.write_bytes(content)
 
         try:
-            duration = await self._probe_duration_file(dest)
+            probe = await self._probe_file(dest)
         except AppError:
             dest.unlink(missing_ok=True)
             raise
 
+        duration = probe["duration_seconds"]
         if duration > settings.max_duration_seconds:
             dest.unlink(missing_ok=True)
             raise AppError(FILE_TOO_LONG, "파일 길이는 10분 이하여야 합니다.")
@@ -34,6 +35,8 @@ class UploadService:
             "original_name": original_filename,
             "size_bytes": len(content),
             "duration_seconds": duration,
+            "sample_rate": probe["sample_rate"],
+            "bit_rate": probe["bit_rate"],
             "path": str(dest),
         }
 
@@ -42,6 +45,8 @@ class UploadService:
             "original_name": original_filename,
             "size_bytes": len(content),
             "duration_seconds": duration,
+            "sample_rate": probe["sample_rate"],
+            "bit_rate": probe["bit_rate"],
         }
 
     def get_audio_path(self, file_id: str) -> Optional[Path]:
@@ -60,6 +65,8 @@ class UploadService:
             "original_name": meta["original_name"],
             "size_bytes": meta["size_bytes"],
             "duration_seconds": meta["duration_seconds"],
+            "sample_rate": meta.get("sample_rate"),
+            "bit_rate": meta.get("bit_rate"),
         }
 
     async def get_waveform(self, file_id: str) -> Optional[dict]:
@@ -76,10 +83,13 @@ class UploadService:
 
         return {"file_id": file_id, "peaks": peaks}
 
-    async def _probe_duration_file(self, path: Path) -> float:
+    async def _probe_file(self, path: Path) -> dict:
         result = await asyncio.to_thread(
             subprocess.run,
-            ["ffprobe", "-v", "quiet", "-print_format", "json", "-show_format", str(path)],
+            [
+                "ffprobe", "-v", "quiet", "-print_format", "json",
+                "-show_format", "-show_streams", str(path),
+            ],
             capture_output=True,
         )
 
@@ -87,7 +97,25 @@ class UploadService:
             raise AppError(FFPROBE_ERROR, "파일 정보를 읽을 수 없습니다.")
 
         info = json.loads(result.stdout)
-        return float(info["format"]["duration"])
+        duration = float(info["format"]["duration"])
+
+        sample_rate: Optional[int] = None
+        bit_rate: Optional[int] = None
+        for stream in info.get("streams", []):
+            if stream.get("codec_type") == "audio":
+                sr = stream.get("sample_rate")
+                br = stream.get("bit_rate") or info["format"].get("bit_rate")
+                if sr is not None:
+                    sample_rate = int(sr)
+                if br is not None:
+                    bit_rate = int(br)
+                break
+
+        return {
+            "duration_seconds": duration,
+            "sample_rate": sample_rate,
+            "bit_rate": bit_rate,
+        }
 
     async def _extract_waveform(self, source: Path, out_path: Path) -> list[float]:
         result = await asyncio.to_thread(

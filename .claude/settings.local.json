@@ -33,7 +33,9 @@
       "Bash(curl -s http://localhost:8000/api/health)",
       "Bash(curl -s http://localhost:5173)",
       "Skill(update-config)",
-      "Skill(update-config:*)"
+      "Skill(update-config:*)",
+      "mcp__Claude_in_Chrome__list_connected_browsers",
+      "mcp__Claude_in_Chrome__select_browser"
     ]
   }
 }

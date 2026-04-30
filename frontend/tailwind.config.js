@@ -20,10 +20,8 @@ export default {
           600: '#1A2138',
           500: '#222B47',
         },
-        line: {
-          DEFAULT: '#1F2742',
-          2: '#2A3358',
-        },
+        line: '#1F2742',
+        line2: '#2A3358',
         fg: {
           DEFAULT: '#E6ECFF',
           dim: '#A8B0CF',

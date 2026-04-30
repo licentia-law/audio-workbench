@@ -14,41 +14,42 @@ interface SelectionInfoProps {
 }
 
 export function SelectionInfo({ start, end, total }: SelectionInfoProps) {
-  const length = end - start
+  const length = Math.max(0, end - start)
   const lengthOk = length >= 1.0
   const hasFile = total > 0
 
+  const cells = [
+    {
+      label: '시작 시점',
+      big: hasFile ? fmt(start) : '--:--',
+      sub: '범위 0:00.00',
+      color: 'text-brand-cyan',
+    },
+    {
+      label: '종료 시점',
+      big: hasFile ? fmt(end) : '--:--',
+      sub: hasFile ? `범위 ${fmt(total)}` : '범위 --:--',
+      color: 'text-brand-indigo',
+    },
+    {
+      label: '선택 길이',
+      big: hasFile ? fmt(length) : '--:--',
+      sub: hasFile ? `(${length.toFixed(2)}초)` : '(0.00초)',
+      color: !hasFile ? 'text-fg-mute' : lengthOk ? 'text-ok' : 'text-warn',
+    },
+  ]
+
   return (
-    <div className="rounded-2xl border border-line bg-ink-700 shadow-card p-5">
-      <div className="grid grid-cols-3 divide-x divide-line/60">
-        {/* Start */}
-        <div className="flex flex-col items-center gap-1 px-4">
-          <span className="text-[11px] text-fg-mute uppercase tracking-wide">시작 시점</span>
-          <span className="font-mono text-[36px] font-semibold leading-none text-brand-cyan">
-            {hasFile ? fmt(start) : '--:--'}
-          </span>
+    <div className="rounded-2xl border border-line bg-ink-700 shadow-card grid grid-cols-3 divide-x divide-line2/40">
+      {cells.map((c) => (
+        <div key={c.label} className="px-7 py-5 flex flex-col items-center text-center">
+          <div className="text-[12px] text-fg-mute mb-1.5">{c.label}</div>
+          <div className={`font-mono text-[36px] font-semibold tracking-tight leading-none ${c.color}`}>
+            {c.big}
+          </div>
+          <div className="text-[11.5px] text-fg-mute font-mono mt-2">{c.sub}</div>
         </div>
-
-        {/* End */}
-        <div className="flex flex-col items-center gap-1 px-4">
-          <span className="text-[11px] text-fg-mute uppercase tracking-wide">종료 시점</span>
-          <span className="font-mono text-[36px] font-semibold leading-none text-brand-indigo">
-            {hasFile ? fmt(end) : '--:--'}
-          </span>
-        </div>
-
-        {/* Length */}
-        <div className="flex flex-col items-center gap-1 px-4">
-          <span className="text-[11px] text-fg-mute uppercase tracking-wide">선택 길이</span>
-          <span
-            className={`font-mono text-[36px] font-semibold leading-none ${
-              !hasFile ? 'text-fg-mute' : lengthOk ? 'text-ok' : 'text-warn'
-            }`}
-          >
-            {hasFile ? fmt(length) : '--:--'}
-          </span>
-        </div>
-      </div>
+      ))}
     </div>
   )
 }
