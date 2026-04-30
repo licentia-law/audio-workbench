@@ -1,5 +1,6 @@
 import asyncio
 import json
+import subprocess
 import uuid
 from pathlib import Path
 from typing import Optional
@@ -76,37 +77,33 @@ class UploadService:
         return {"file_id": file_id, "peaks": peaks}
 
     async def _probe_duration_file(self, path: Path) -> float:
-        proc = await asyncio.create_subprocess_exec(
-            "ffprobe",
-            "-v", "quiet",
-            "-print_format", "json",
-            "-show_format",
-            str(path),
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+        result = await asyncio.to_thread(
+            subprocess.run,
+            ["ffprobe", "-v", "quiet", "-print_format", "json", "-show_format", str(path)],
+            capture_output=True,
         )
-        stdout, stderr = await proc.communicate()
 
-        if proc.returncode != 0:
+        if result.returncode != 0:
             raise AppError(FFPROBE_ERROR, "파일 정보를 읽을 수 없습니다.")
 
-        info = json.loads(stdout)
+        info = json.loads(result.stdout)
         return float(info["format"]["duration"])
 
     async def _extract_waveform(self, source: Path, out_path: Path) -> list[float]:
-        proc = await asyncio.create_subprocess_exec(
-            "ffmpeg",
-            "-i", str(source),
-            "-ac", "1",
-            "-filter:a", "aresample=8000",
-            "-map", "0:a",
-            "-c:a", "pcm_s16le",
-            "-f", "data",
-            "pipe:1",
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.DEVNULL,
+        result = await asyncio.to_thread(
+            subprocess.run,
+            [
+                "ffmpeg", "-i", str(source),
+                "-ac", "1",
+                "-filter:a", "aresample=8000",
+                "-map", "0:a",
+                "-c:a", "pcm_s16le",
+                "-f", "data",
+                "pipe:1",
+            ],
+            capture_output=True,
         )
-        stdout, _ = await proc.communicate()
+        stdout = result.stdout
 
         samples = []
         for i in range(0, len(stdout) - 1, 2):

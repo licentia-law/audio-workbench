@@ -10,9 +10,9 @@ const NAV_ITEMS = [
 
 export function AppSidebar() {
   return (
-    <aside className="w-56 flex-shrink-0 bg-surface-raised border-r border-white/10 flex flex-col">
-      <div className="px-5 py-5 border-b border-white/10">
-        <h1 className="text-lg font-bold text-white tracking-tight">Audio Workbench</h1>
+    <aside className="w-56 flex-shrink-0 bg-ink-800 border-r border-line flex flex-col">
+      <div className="px-5 py-5 border-b border-line">
+        <h1 className="text-lg font-bold text-fg tracking-tight">Audio Workbench</h1>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1">
         {NAV_ITEMS.map(({ to, label, icon }) => (
@@ -22,8 +22,8 @@ export function AppSidebar() {
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-accent text-white'
-                  : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                  ? 'bg-brand-cyan/15 text-brand-cyan border border-brand-cyan/30'
+                  : 'text-fg-mute hover:bg-ink-600 hover:text-fg border border-transparent'
               }`
             }
           >

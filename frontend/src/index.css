@@ -8,6 +8,8 @@
   }
 
   body {
-    @apply bg-surface text-gray-100 font-sans;
+    background-color: #0B1020;
+    color: #E6ECFF;
+    @apply font-sans;
   }
 }

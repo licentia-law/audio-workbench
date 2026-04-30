@@ -1,4 +1,5 @@
 import asyncio
+import subprocess
 import uuid
 from pathlib import Path
 
@@ -18,19 +19,20 @@ async def cut_mp3(
     suggested = cut_filename(original_name)
     output_path = temp_manager.get_path("renders") / artifact_id
 
-    proc = await asyncio.create_subprocess_exec(
-        "ffmpeg", "-y",
-        "-i", str(input_path),
-        "-ss", f"{start_sec:.3f}",
-        "-t", f"{duration:.3f}",
-        "-codec:a", "libmp3lame",
-        str(output_path),
-        stdout=asyncio.subprocess.DEVNULL,
-        stderr=asyncio.subprocess.DEVNULL,
+    result = await asyncio.to_thread(
+        subprocess.run,
+        [
+            "ffmpeg", "-y",
+            "-i", str(input_path),
+            "-ss", f"{start_sec:.3f}",
+            "-t", f"{duration:.3f}",
+            "-codec:a", "libmp3lame",
+            str(output_path),
+        ],
+        capture_output=True,
     )
-    await proc.communicate()
 
-    if proc.returncode != 0:
+    if result.returncode != 0:
         raise RuntimeError("ffmpeg cut failed")
 
     artifact_registry.register(artifact_id, suggested)

@@ -94,3 +94,43 @@
 - wavesurfer.js `ws.load(src, [peaks])` — peaks는 `number[][]` (채널 배열 배열) 형식
 
 ---
+
+### 2026-04-30 — P2 음원 자르기 구현 완료
+
+**완료한 것:**
+
+Backend (신규/수정 8개 파일):
+- `cut_service.py` — ffmpeg 기반 구간 자르기 (`asyncio.to_thread` 패턴)
+- `artifact_registry.py` — artifact_id → suggested_filename 인메모리 매핑
+- `POST /api/cut` 라우터 (범위 검증 + INVALID_CUT_RANGE 에러)
+- `filename_policy.py` — `cut_filename()` 추가
+- `errors.py` — `INVALID_CUT_RANGE` 추가
+- `download.py` — artifact_registry 기반 파일명 헤더
+- `upload_service.py` — Windows asyncio 이슈 완전 해결 (`to_thread`)
+
+Frontend (신규/수정 13개 파일):
+- `tailwind.config.js` — 디자인 토큰 전면 확장 (ink/line/fg/brand/play/ok/warn/err)
+- `useTrimSelection`, `useTrimPlayback` 훅
+- `components/trim/` 5개 컴포넌트 (WaveformCard, SelectionInfo, ControlBar, ResultCard, GuidanceCard)
+- `CutPage/index.tsx` 전면 재작성
+- `AppSidebar`, `AppLayout` 디자인 토큰 갱신
+- `docs/manual/runtime.md` 신규 작성
+
+**핵심 트러블슈팅:**
+- Windows에서 uvicorn `--reload` + `asyncio.create_subprocess_exec` → `NotImplementedError` 발생
+  → `asyncio.to_thread(subprocess.run, ...)` 패턴으로 해결 (upload_service + cut_service 모두 적용)
+- Tailwind `extend.colors` 토큰은 `@apply`에서 동작 안 함 → raw hex CSS 사용
+- `.venv/Scripts/Activate.ps1` 없음 → 실행 파일 직접 경로 지정 방식 문서화
+
+**남은 것 / 다음 세션에서 할 것:**
+- P3: 음원 분석 (BPM + Key)
+  - `librosa` 설치 확인 필요
+  - `analyze_service.py` + `POST /api/analyze`
+  - `AnalyzePage` UI 구현
+
+**주의사항:**
+- `asyncio.to_thread(subprocess.run, ...)` 패턴 — 새로운 ffmpeg/ffprobe 호출 시 반드시 이 패턴 사용
+- Tailwind 커스텀 토큰은 JSX className에서만 사용, CSS `@apply`에서는 raw hex 사용
+- `artifact_registry`는 인메모리 → 백엔드 재시작 시 초기화됨 (세션 정책상 의도된 동작)
+
+---

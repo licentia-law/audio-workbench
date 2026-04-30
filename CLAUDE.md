@@ -155,6 +155,11 @@ empty → uploaded → processing → success
 | WaveformPanel | components/waveform/ | ✅ P1 완료 |
 | ResultFileCard | components/result/ | ✅ P1 완료 |
 | DownloadButton | components/result/ | ✅ P1 완료 |
+| WaveformCard (trim) | components/trim/ | ✅ P2 완료 |
+| SelectionInfo | components/trim/ | ✅ P2 완료 |
+| ControlBar (trim) | components/trim/ | ✅ P2 완료 |
+| ResultCard (trim) | components/trim/ | ✅ P2 완료 |
+| GuidanceCard | components/trim/ | ✅ P2 완료 |
 
 ---
 
@@ -164,7 +169,7 @@ empty → uploaded → processing → success
 |---|---|---|
 | P0 | 공통 기반 구조 (백엔드 API + 프론트 스캐폴딩) | ✅ 완료 |
 | P1 | 공통 오디오 UX (Player, WaveformPanel, 상태 전환 프레임) | ✅ 완료 |
-| P2 | 1페이지: 음원 자르기 | 🔲 |
+| P2 | 1페이지: 음원 자르기 | ✅ 완료 |
 | P3 | 2페이지: 음원 분석 | 🔲 |
 | P4 | 3페이지: Key 변환 | 🔲 |
 | P5 | 4페이지: 음량 증폭 | 🔲 |

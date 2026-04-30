@@ -40,6 +40,13 @@ export default {
         warn: '#F2B544',
         err: '#F46E7A',
       },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+      },
+      boxShadow: {
+        card: '0 12px 30px -18px rgba(0,0,0,.7)',
+      },
     },
   },
   plugins: [],
