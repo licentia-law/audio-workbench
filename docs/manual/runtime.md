@@ -17,16 +17,6 @@
 .\scripts\run_frontend.ps1
 ```
 
-
-## 패키지 설치 (필요 시)
-
-```powershell
-cd C:\Users\mycho\Downloads\_Licentia\Coding\audio-workbench\backend
-.\.venv\Scripts\pip.exe install -r requirements.txt
-```
-
----
-
 ## 주의사항
 
 - 백엔드를 **먼저** 실행한 뒤 프론트엔드를 실행한다.
