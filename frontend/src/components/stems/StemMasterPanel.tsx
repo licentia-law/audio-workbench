@@ -23,6 +23,8 @@ interface StemMasterPanelProps {
   rendering: boolean
   onMasterChange: (db: number) => void
   onPlayToggle: () => void
+  onStop: () => void
+  onSeek: (sec: number) => void
   onRenderMix: () => void
 }
 
@@ -41,6 +43,8 @@ export function StemMasterPanel({
   rendering,
   onMasterChange,
   onPlayToggle,
+  onStop,
+  onSeek,
   onRenderMix,
 }: StemMasterPanelProps) {
   const ready    = pageStatus === 'success'
@@ -59,6 +63,14 @@ export function StemMasterPanel({
 
   // level meter bar (master output)
   const meterH = ready ? `${Math.min(level * 120, 100)}%` : '0%'
+
+  // 파형 클릭 → seek
+  function handleWaveClick(e: React.MouseEvent<SVGSVGElement>) {
+    if (!ready || durationSec <= 0) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const ratio = Math.max(0, Math.min((e.clientX - rect.left) / rect.width, 1))
+    onSeek(ratio * durationSec)
+  }
 
   return (
     <div className="rounded-2xl border border-line bg-ink-700 shadow-card">
@@ -83,7 +95,12 @@ export function StemMasterPanel({
           <div className="rounded-xl bg-ink-800 border border-line2/40 p-3 flex flex-col justify-between flex-1">
             {/* SVG 파형 */}
             <div className="relative">
-              <svg viewBox={`0 0 ${MIX_WAVE.length} 100`} preserveAspectRatio="none" className="w-full h-[64px]">
+              <svg
+                viewBox={`0 0 ${MIX_WAVE.length} 100`}
+                preserveAspectRatio="none"
+                className={`w-full h-[64px] ${ready ? 'cursor-pointer' : ''}`}
+                onClick={handleWaveClick}
+              >
                 <defs>
                   <linearGradient id="mpDim" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0" stopColor="#3A4670" /><stop offset="1" stopColor="#222B47" />
@@ -109,12 +126,13 @@ export function StemMasterPanel({
                     ))}
                   </g>
                 )}
-                {/* 재생 헤드 */}
-                {ready && isPlaying && (
+                {/* 재생 헤드 — 재생 중 or 일시정지 위치에 표시 */}
+                {ready && positionSec > 0 && (
                   <line
                     x1={MIX_WAVE.length * progress} y1="0"
                     x2={MIX_WAVE.length * progress} y2="100"
                     stroke="#FFB347" strokeWidth="0.8"
+                    opacity={isPlaying ? 1 : 0.6}
                   />
                 )}
                 {!ready && (
@@ -129,17 +147,35 @@ export function StemMasterPanel({
             </div>
             {/* transport */}
             <div className="flex items-center justify-between mt-2.5">
-              <button
-                disabled={!ready}
-                onClick={onPlayToggle}
-                className={`w-9 h-9 rounded-full grid place-items-center transition-colors ${
-                  ready
-                    ? 'bg-brand-cyan text-ink-900 hover:bg-brand-cyan/90'
-                    : 'bg-ink-500 text-fg-faint cursor-not-allowed'
-                }`}
-              >
-                <Icon name={isPlaying ? 'pause' : 'play'} className="w-4 h-4" />
-              </button>
+              {/* 재생 컨트롤 버튼 묶음 */}
+              <div className="flex items-center gap-1.5">
+                {/* 재생 / 일시정지 */}
+                <button
+                  disabled={!ready}
+                  onClick={onPlayToggle}
+                  title={isPlaying ? '일시정지' : '재생'}
+                  className={`w-9 h-9 rounded-full grid place-items-center transition-colors ${
+                    ready
+                      ? 'bg-brand-cyan text-ink-900 hover:bg-brand-cyan/90'
+                      : 'bg-ink-500 text-fg-faint cursor-not-allowed'
+                  }`}
+                >
+                  <Icon name={isPlaying ? 'pause' : 'play'} className="w-4 h-4" />
+                </button>
+                {/* 정지 (처음으로) */}
+                <button
+                  disabled={!ready || (!isPlaying && positionSec === 0)}
+                  onClick={onStop}
+                  title="멈춤 (처음으로)"
+                  className={`w-8 h-8 rounded-lg grid place-items-center transition-colors ${
+                    ready && (isPlaying || positionSec > 0)
+                      ? 'bg-ink-600 text-fg hover:bg-ink-500'
+                      : 'bg-ink-600 text-fg-faint cursor-not-allowed opacity-40'
+                  }`}
+                >
+                  <Icon name="stop" className="w-3.5 h-3.5" />
+                </button>
+              </div>
               <div className="font-mono text-[11px] text-fg-dim">
                 {ready ? `${fmtTime(positionSec)} / ${fmtTime(durationSec)}` : '--:-- / --:--'}
               </div>

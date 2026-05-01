@@ -16,6 +16,7 @@ interface UseStemMixerReturn {
   buffersReady: boolean
   play: () => void
   stop: () => void
+  stopReset: () => void  // 정지 + 처음으로 되돌림
   seekTo: (sec: number) => void
 }
 
@@ -211,6 +212,17 @@ export function useStemMixer(
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [durationSec])
 
+  // ── stopReset ─────────────────────────────────────────────────────────────
+  const stopReset = useCallback(() => {
+    cancelAnimationFrame(rafRef.current)
+    Object.values(sourcesRef.current).forEach(s => { try { s?.stop() } catch {} })
+    sourcesRef.current = {}
+    seekOffsetRef.current = 0
+    setPositionSec(0)
+    setIsPlaying(false)
+    setLevel(0)
+  }, [])
+
   // ── seekTo ────────────────────────────────────────────────────────────────
   const seekTo = useCallback((sec: number) => {
     seekOffsetRef.current = Math.max(0, Math.min(sec, durationSec))
@@ -218,5 +230,5 @@ export function useStemMixer(
     if (isPlaying) play()
   }, [isPlaying, play, durationSec])
 
-  return { isPlaying, positionSec, durationSec, level, buffersReady, play, stop, seekTo }
+  return { isPlaying, positionSec, durationSec, level, buffersReady, play, stop, stopReset, seekTo }
 }

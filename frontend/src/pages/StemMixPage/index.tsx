@@ -174,10 +174,20 @@ export function StemMixPage() {
     })
   }
 
-  // ── 플레이/스톱 토글 ──────────────────────────────────────────────────────
+  // ── 플레이/일시정지 토글 ──────────────────────────────────────────────────
   function handlePlayToggle() {
     if (mixer.isPlaying) mixer.stop()
     else mixer.play()
+  }
+
+  // ── 정지 (처음으로) ───────────────────────────────────────────────────────
+  function handleStop() {
+    mixer.stopReset()
+  }
+
+  // ── 씩 (파형 클릭) ────────────────────────────────────────────────────────
+  function handleSeek(sec: number) {
+    mixer.seekTo(sec)
   }
 
   // ── 믹스 파형 표시용 durationSec ─────────────────────────────────────────
@@ -291,6 +301,8 @@ export function StemMixPage() {
         rendering={render.rendering}
         onMasterChange={setMasterGain}
         onPlayToggle={handlePlayToggle}
+        onStop={handleStop}
+        onSeek={handleSeek}
         onRenderMix={handleRenderMix}
       />
 
