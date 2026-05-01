@@ -64,6 +64,54 @@ export interface AnalysisResult {
   duration_seconds: number
 }
 
+export interface KeyShiftResult {
+  artifactId: string
+  suggestedFilename: string
+  durationSec: number
+  sizeBytes: number
+}
+
+// ── Stem types ───────────────────────────────────────────────────────────────
+
+export type StemId = 'vocals' | 'drums' | 'bass' | 'other'
+
+export interface StemInfo {
+  artifactId: string
+  suggestedFilename: string
+  sizeBytes: number
+  durationSec: number
+}
+
+export interface StemTrack {
+  id: StemId
+  blob: Blob
+  url: string        // URL.createObjectURL — 미리듣기용 (내부 사용)
+  peaks: number[]    // 0~1, 220 포인트 (결정론적 생성)
+  durationSec: number
+}
+
+export interface ChannelState {
+  gainDb: number     // -24 ~ +12
+  muted: boolean
+  solo: boolean
+}
+
+export interface MixerState {
+  channels: Record<StemId, ChannelState>
+  masterDb: number   // -24 ~ +12
+}
+
+export interface StemSeparateResult {
+  stems: Record<StemId, StemInfo>
+}
+
+export interface StemMixResult {
+  artifactId: string
+  suggestedFilename: string
+  sizeBytes: number
+  durationSec: number
+}
+
 export interface AmpStats {
   rmsDbfs: number | null
   peakDbfs: number | null

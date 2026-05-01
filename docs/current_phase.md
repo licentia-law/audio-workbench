@@ -1,6 +1,6 @@
 # 현재 진행 단계
 
-- 최종 업데이트: 2026-05-01 (P5 음량 증폭 완료 → P4 Key 변환 다음 착수)
+- 최종 업데이트: 2026-05-01 (P4 Key 변환 완료 → P6 스템 분리/믹스 다음 착수)
 
 ---
 
@@ -16,9 +16,9 @@
 | P2 | 1페이지: 음원 자르기 | ✅ 완료 |
 | P3 | 2페이지: 음원 분석 | ✅ 완료 |
 | P5 | 4페이지: 음량 증폭 | ✅ 완료 |
-| **P4** | **3페이지: Key 변환** | **🔲 다음 착수** |
-| P6 | 5페이지: 스템 분리/믹스 | 🔲 대기 |
-| P7 | 안정화 / README | 🔲 대기 |
+| P4 | 3페이지: Key 변환 | ✅ 완료 |
+| P6 | 5페이지: 스템 분리/믹스 | ✅ 완료 |
+| **P7** | **안정화 / README** | **🔲 다음 착수** |
 
 ---
 
@@ -239,13 +239,107 @@
 
 ---
 
-## 다음 단계: P4 — Key 변환
+## P4 완료 내역 (2026-05-01)
 
-### P4 착수 전 체크
-- [ ] `docs/ui_design_reference/claude_design/` P4 시안 확정
-- [ ] Rubber Band CLI 설치 확인 (`rubberband --version`)
-- [ ] `errors.py`에 `KEY_SHIFT_FAILED` 에러 코드 추가
-- [ ] `filename_policy.py`에 key shift 결과 파일명 규칙 추가
-- [ ] `key_shift_service.py` 서비스 파일 생성
-- [ ] `POST /api/key-shift` 라우터 추가
-- [ ] `KeyShiftPage` UI 설계 (semitone 선택 UI 확정)
+### Backend
+
+- [x] `app/core/errors.py` — `KEY_SHIFT_FAILED` 에러 코드 추가
+- [x] `app/core/filename_policy.py` — `key_shift_filename(original_name, semitones, tonic_idx, mode)` 추가
+  - tonic_idx+mode 있을 때: `song(C_minor).mp3`, `song(F_sharp_Major).mp3`
+  - Unknown 시: `song(key_shift_+3).mp3`
+  - sharp → `_sharp`, flat(b) → `_flat` 치환
+- [x] `app/services/key_shift_service.py` (신규) — ffmpeg rubberband 내장 필터
+  - `pitch_scale = 2 ** (semitones / 12)` 계산
+  - `-af rubberband=pitch={scale:.6f}:pitchq=quality` 필터
+  - `asyncio.to_thread(subprocess.run)` 패턴 (Windows asyncio 정책)
+  - Rubber Band CLI 바이너리 설치 불필요 (ffmpeg 내장)
+- [x] `app/api/routes/key_shift.py` (신규) — `POST /api/key-shift` (file_id, semitones -12~+12, tonic_idx, mode)
+- [x] `app/main.py` — key_shift 라우터 등록
+
+### Frontend
+
+- [x] `src/types/index.ts` — `KeyShiftResult` 타입 추가
+- [x] `src/utils/format.ts` — `formatSemitone(semi)` 추가 (`+3` | `-2` | `±0`)
+- [x] `src/lib/audio/keyName.ts` (신규) — `tonicToIdx`, `transposeKey` (SSOT)
+- [x] `src/hooks/useKeyShift.ts` (신규) — semitone 상태 관리 (clamp -12~+12)
+- [x] `src/services/api.ts` — `apiService.keyShift(fileId, semitones, tonicIdx, mode)` 추가
+- [x] `src/components/icons/Icon.tsx` — `music`, `arrow-right`, `minus`, `plus`, `reset` 아이콘 추가
+- [x] `src/components/key_shift/OriginalInfoCard.tsx` (신규) — 원본 Key/BPM + 원본 재생 버튼
+- [x] `src/components/key_shift/SemitoneControl.tsx` (신규) — 큰 숫자 + −/+ 스테퍼 + 드래그 슬라이더 트랙
+- [x] `src/components/key_shift/PredictedResultCard.tsx` (신규) — 원본→예상 Key 실시간 표시
+- [x] `src/components/key_shift/GuidanceCard.tsx` (신규) — 안내 및 팁 (키보드 단축키 포함)
+- [x] `src/components/key_shift/ActionBar.tsx` (신규) — 변환 실행/결과 재생/초기화 3버튼
+- [x] `src/components/key_shift/ConversionResultCard.tsx` (신규) — 상태별 결과 카드
+- [x] `src/pages/KeyShiftPage/index.tsx` — 전면 재작성
+
+### 핵심 기술 결정
+
+- **ffmpeg rubberband 내장 필터**: 외부 CLI 바이너리 불필요, `-af rubberband=pitch=...` 사용
+- **pitch_scale**: `2 ** (semitones / 12)` 공식 (반음 12개 = 옥타브 2배)
+- **자동 분석**: 업로드 직후 `/api/analyze` 백그라운드 호출 → Key/BPM 표시 (실패 시 Unknown)
+- **filename 생성**: 백엔드가 tonic_idx+mode 수신 후 전조 Key 계산 (프론트 fileSafe 문자열 전송 금지)
+- **결과 재생**: `/api/download/{artifactId}` URL을 `useAudioPlayback` src로 직접 사용
+- **키보드 단축키**: ←/→(±1), Shift+←/→(±5), 0(초기화), Space(재생), Enter(변환)
+
+---
+
+## P6 완료 내역 (2026-05-01)
+
+### Backend
+
+- [x] `app/core/errors.py` — `STEM_SEPARATION_FAILED`, `STEM_MIX_FAILED` 에러 코드 추가
+- [x] `app/core/filename_policy.py` — `stem_filename(original_name, stem_id)`, `mix_filename(original_name)` 추가
+  - 개별: `song(vocals).mp3`, `song(drums).mp3` 등
+  - 믹스: `song(mixed).mp3`
+- [x] `app/services/stem_service.py` (신규) — Demucs 4-stem 분리 + wav→mp3 변환
+  - `sys.executable -m demucs -n htdemucs --out {stems_dir} {input_path}` (asyncio.to_thread 패턴)
+  - 출력: `{stems_dir}/htdemucs/{file_id}/{stem_id}.wav`
+  - 각 wav → ffmpeg mp3 → `renders/` 저장 → artifact_registry 등록
+- [x] `app/services/stem_mix_service.py` (신규) — ffmpeg amix 믹스 렌더
+  - `volume={linear}` 필터 + `amix=inputs=N:normalize=0` + master volume
+  - `active_stems`만 포함 (뮤트된 채널 제외)
+- [x] `app/api/routes/stems.py` (신규) — `POST /api/stems/separate`, `POST /api/stems/mix`
+- [x] `app/main.py` — stems 라우터 등록 (`prefix="/api/stems"`)
+
+### Frontend
+
+- [x] `src/types/index.ts` — `StemId`, `StemInfo`, `StemTrack`, `ChannelState`, `MixerState`, `StemSeparateResult`, `StemMixResult` 타입 추가
+- [x] `src/utils/format.ts` — `formatStemLabel(id)` 추가 (`'vocals' → '보컬'`)
+- [x] `src/lib/audio/dbfs.ts` — `dbToGain(db)` 추가 (Web Audio GainNode용)
+- [x] `src/hooks/useStemSeparation.ts` (신규) — 분리 API + Blob 취득 + 결정론적 peaks 생성
+  - `genStemPeaks(stemId)` — 디자인 시안 동일 알고리즘 (seed 기반 220포인트)
+  - `genMixPeaks(N)` — StemMasterPanel 믹스 파형용 (export)
+  - setInterval 진행도 시뮬레이션 (1200ms/+2%, 최대 92% → 완료 시 100%)
+  - cancelled 플래그 패턴 적용
+- [x] `src/hooks/useStemMixer.ts` (신규) — Web Audio API 믹서
+  - AudioContext + 4 GainNode + 1 masterGain + AnalyserNode
+  - tracks 변경 시 컨텍스트 재초기화 + 비동기 AudioBuffer 디코딩
+  - mixerState 변경 → GainNode.setTargetAtTime(,, 0.01) 즉시 반영
+  - Solo 로직: `anySolo && !thisSolo → effectiveGain=0`
+  - RAF 루프: positionSec + 레벨 미터 (getFloatTimeDomainData peak)
+  - 자연 종료 감지: `pos >= durationSec`
+- [x] `src/hooks/useStemMixRender.ts` (신규) — 믹스 렌더 API + 자동 다운로드 트리거
+- [x] `src/services/api.ts` — `separateStems()`, `renderStemMix()` 추가
+- [x] `src/components/icons/Icon.tsx` — `mic`, `drum`, `bass`, `other-stem`, `mix` 아이콘 추가
+- [x] `src/components/stems/StemMiniWave.tsx` (신규) — dim+hot+playhead SVG 파형
+- [x] `src/components/stems/VerticalFader.tsx` (신규) — -24~+12 dB 드래그 페이더, 0dB 눈금, 피크 미터
+- [x] `src/components/stems/StemChannel.tsx` (신규) — 채널 카드 (헤더+M/S+파형+페이더+다운로드)
+- [x] `src/components/stems/StemUploadCard.tsx` (신규) — 3-column 업로드 카드 + 분리 진행 바
+- [x] `src/components/stems/StemMasterPanel.tsx` (신규) — 3-column 마스터 패널
+- [x] `src/components/stems/StemNoticeCard.tsx` (신규) — 품질 면책 + 에러 안내
+- [x] `src/pages/StemMixPage/index.tsx` — 전면 재작성
+
+### 핵심 기술 결정
+
+- **Demucs 실행**: `sys.executable -m demucs` (asyncio.to_thread 필수, Windows asyncio 정책)
+- **출력 경로**: `{stems_dir}/htdemucs/{file_id}/` → 각 스템 wav
+- **stems → renders**: 모든 변환 mp3는 `renders/` 저장 → 기존 download 엔드포인트 그대로 재사용
+- **파형**: 결정론적 seed 기반 peaks (실제 오디오 디코딩 불필요, 채널별 고유 패턴)
+- **Web Audio**: AudioBuffer는 useStemMixer가 Blob에서 직접 디코딩 (별도 피크 추출 없음)
+- **MixerState 소유권**: StemMixPage 소유, useStemMixer는 read-only (setters는 페이지에)
+- **자동 다운로드**: renderMix() 완료 후 anchor.click() 패턴 (useStemMixRender 내부)
+- **키보드 단축키**: Space(재생), 1~4(뮤트 토글), R(페이더 초기화), Enter(믹스 렌더)
+
+---
+
+## 다음 단계: P7 — 안정화 / README

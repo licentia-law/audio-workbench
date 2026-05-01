@@ -234,6 +234,57 @@ Frontend (신규 8개, 수정 4개 파일):
 
 ---
 
+### 2026-05-01 — P6 스템 분리/믹스 구현 완료 + 코드 리뷰 수정 5건 반영
+
+**완료한 것:**
+
+Backend (신규/수정 5개 파일):
+- `errors.py` — `STEM_SEPARATION_FAILED`, `STEM_MIX_FAILED` 추가
+- `filename_policy.py` — `stem_filename(original_name, stem_id)`, `mix_filename(original_name)` 추가
+  - 개별: `song(vocals).mp3`, `song(drums).mp3` 등 / 믹스: `song(mixed).mp3`
+- `services/stem_service.py` (신규) — Demucs htdemucs 4-stem 분리 + wav→mp3 변환
+  - `sys.executable -m demucs -n htdemucs --out {stems_dir} {input_path}` (asyncio.to_thread 패턴)
+  - 출력: `{stems_dir}/htdemucs/{file_id}/{stem_id}.wav` → ffmpeg mp3 → `renders/`
+- `services/stem_mix_service.py` (신규) — ffmpeg amix 믹스 렌더
+  - `volume={linear}` 필터 + `amix=inputs=N:normalize=0` + master volume
+  - `active_stems`만 포함 (뮤트된 채널 제외)
+- `api/routes/stems.py` (신규) — `POST /api/stems/separate`, `POST /api/stems/mix`
+- `main.py` — stems 라우터 등록 (`prefix="/api/stems"`)
+
+Frontend (신규 14개, 수정 5개 파일):
+- `types/index.ts` — StemId/StemInfo/StemTrack/ChannelState/MixerState/StemSeparateResult/StemMixResult 타입 추가
+- `utils/format.ts` — `formatStemLabel(id)` 추가 (`'vocals' → '보컬'`)
+- `lib/audio/dbfs.ts` — `dbToGain(db)` 추가 (Web Audio GainNode용)
+- `hooks/useStemSeparation.ts` (신규) — 분리 API + Blob 취득 + 결정론적 peaks, operationId 비동기 취소 패턴
+- `hooks/useStemMixer.ts` (신규) — Web Audio API (AudioContext + 4GainNode + masterGain + AnalyserNode), RAF 루프, Solo 로직
+- `hooks/useStemMixRender.ts` (신규) — 믹스 렌더 API + 자동 다운로드 트리거
+- `services/api.ts` — `separateStems()`, `renderStemMix()` 추가
+- `components/icons/Icon.tsx` — mic/drum/bass/other-stem/mix 아이콘 추가
+- `components/stems/StemMiniWave.tsx` (신규) — dim+hot+playhead SVG 파형
+- `components/stems/VerticalFader.tsx` (신규) — -24~+12 dB 드래그 페이더, 0dB 눈금
+- `components/stems/StemChannel.tsx` (신규) — 채널 카드 (헤더+M/S+파형+페이더+다운로드)
+- `components/stems/StemUploadCard.tsx` (신규) — 3-column 업로드 카드 + 분리 진행 바
+- `components/stems/StemMasterPanel.tsx` (신규) — 3-column 마스터 패널
+- `components/stems/StemNoticeCard.tsx` (신규) — 품질 면책 + 에러 안내
+- `pages/StemMixPage/index.tsx` — 전면 재작성
+
+코드 리뷰 수정 5건:
+- A1: StemChannel 다운로드 버튼 `<a href="">` → `<button onClick={onDownload}>` 수정 (항상 빈 href였던 버그)
+- A2: useStemSeparation async 취소: `cancelled` 플래그 패턴 → operationId ref 패턴 전환 (reset()에서 취소 불가 버그 해결)
+- A3: 키보드 핸들러 stale closure: `mixerState, separation.stems, uploadedFile` deps 누락 수정 (Enter → 믹스 렌더 시 초기값 사용 버그)
+- A4: handleSeparate에 `setErrorMsg(null)` 추가 (재시도 시 이전 오류 메시지 잔존 버그)
+- B1: STEM_IDS SSOT 위반 제거 — useStemMixer 내 중복 선언 삭제, useStemSeparation에서 import로 통일
+
+**남은 것 / 다음 세션에서 할 것:**
+- P7: 안정화 / README
+
+**주의사항 (P7 착수 시):**
+- Demucs 분리는 처리 시간이 길 수 있음 (GPU 없으면 CPU 모드, 곡 길이에 따라 수 분 소요)
+- Web Audio API: iOS Safari에서는 AudioContext 자동 시작 제한 있음 (개인용 Windows 환경이므로 현재 비해당)
+- STEM_IDS SSOT: `useStemSeparation`에서만 export, 다른 파일에서 재선언 금지
+
+---
+
 ### 2026-04-30 — P2 음원 자르기 구현 완료
 
 **완료한 것:**

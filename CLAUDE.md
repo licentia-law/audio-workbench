@@ -87,20 +87,23 @@ audio-workbench/
 │  │  ├─ result/          # FileMetaCard, ResultFileCard, DownloadButton
 │  │  ├─ trim/            # WaveformCard, SelectionInfo, ControlBar, ResultCard, GuidanceCard
 │  │  ├─ analyze/         # RunBar, ResultBigCard, NoticeCard, LoudnessCard, StepListCard, FootNotice
-│  │  └─ amplify/         # GainSliderPanel, LevelMeterPanel, AmpWaveformCard, AmpControlBar, AmpResultCard, AmpGuidanceCard
+│  │  ├─ amplify/         # GainSliderPanel, LevelMeterPanel, AmpWaveformCard, AmpControlBar, AmpResultCard, AmpGuidanceCard
+│  │  ├─ key_shift/       # OriginalInfoCard, SemitoneControl, PredictedResultCard, GuidanceCard, ActionBar, ConversionResultCard
+│  │  └─ stems/           # StemUploadCard, StemChannel, VerticalFader, StemMiniWave, StemMasterPanel, StemNoticeCard
 │  ├─ hooks/              # useAudioPlayer, useProcessingPage, useAudioPlayback, useAnalysisJob,
-│  │                      # useTrimSelection, useTrimPlayback(re-export), useGainPreview
-│  ├─ lib/audio/          # dbfs.ts (linToDb/dbToLin/computeStats/dbToPct SSOT)
-│  ├─ utils/              # format.ts (formatBytes/Duration/SampleRate/Bitrate/GainDb/GainDbNum)
+│  │                      # useTrimSelection, useTrimPlayback(re-export), useGainPreview, useKeyShift,
+│  │                      # useStemSeparation, useStemMixer, useStemMixRender
+│  ├─ lib/audio/          # dbfs.ts (linToDb/dbToLin/computeStats/dbToPct/dbToGain), keyName.ts (tonicToIdx/transposeKey)
+│  ├─ utils/              # format.ts (formatBytes/Duration/SampleRate/Bitrate/GainDb/GainDbNum/Semitone/StemLabel)
 │  ├─ services/api.ts     # fetch 래퍼, 공통 에러 핸들링
 │  ├─ stores/fileStore.ts # Zustand 전역 파일 상태
 │  └─ types/index.ts      # 공통 타입
 ├─ backend/app/
-│  ├─ main.py             # FastAPI 앱, lifespan, CORS, 에러 핸들러
-│  ├─ api/routes/         # upload, file, download, session, cut, analyze, amplify
+│  ├─ main.py             # FastAPI 앱, lifespan, CORS, 에러 핸들러 (cut/analyze/amplify/key_shift 라우터 포함)
+│  ├─ api/routes/         # upload, file, download, session, cut, analyze, amplify, key_shift, stems
 │  ├─ api/schemas/        # ApiResponse 스키마
 │  ├─ core/               # config, temp_manager, filename_policy, errors, artifact_registry
-│  └─ services/           # upload_service, cut_service, analysis_service, amplify_service
+│  └─ services/           # upload_service, cut_service, analysis_service, amplify_service, key_shift_service, stem_service, stem_mix_service
 ├─ docs/                  # PRD, DTL, 디자인 문서
 └─ scripts/               # run_backend.ps1, run_frontend.ps1, session_context.ps1
 ```
@@ -132,6 +135,7 @@ audio-workbench/
 - `INVALID_CUT_RANGE` — 자르기 범위 오류 (P2~)
 - `ANALYSIS_FAILED` — 음원 분석 실패 (P3~)
 - `AMPLIFY_FAILED` — 음량 증폭 실패 (P5~)
+- `KEY_SHIFT_FAILED` — Key 변환 실패 (P4~)
 
 ### 페이지 상태 (모든 페이지 공통)
 ```
@@ -183,6 +187,18 @@ empty → uploaded → processing → success
 | **AmpControlBar** | **components/amplify/** | **✅ P5 완료** |
 | **AmpResultCard** | **components/amplify/** | **✅ P5 완료** |
 | **AmpGuidanceCard** | **components/amplify/** | **✅ P5 완료** |
+| **OriginalInfoCard** | **components/key_shift/** | **✅ P4 완료** |
+| **SemitoneControl** | **components/key_shift/** | **✅ P4 완료** |
+| **PredictedResultCard** | **components/key_shift/** | **✅ P4 완료** |
+| **GuidanceCard (key_shift)** | **components/key_shift/** | **✅ P4 완료** |
+| **ActionBar (key_shift)** | **components/key_shift/** | **✅ P4 완료** |
+| **ConversionResultCard** | **components/key_shift/** | **✅ P4 완료** |
+| **StemUploadCard** | **components/stems/** | **✅ P6 완료** |
+| **StemChannel** | **components/stems/** | **✅ P6 완료** |
+| **VerticalFader** | **components/stems/** | **✅ P6 완료** |
+| **StemMiniWave** | **components/stems/** | **✅ P6 완료** |
+| **StemMasterPanel** | **components/stems/** | **✅ P6 완료** |
+| **StemNoticeCard** | **components/stems/** | **✅ P6 완료** |
 
 ---
 
@@ -198,9 +214,9 @@ empty → uploaded → processing → success
 | P2 | 1페이지: 음원 자르기 | ✅ 완료 | ffmpeg only |
 | P3 | 2페이지: 음원 분석 | ✅ 완료 | librosa |
 | P5 | 4페이지: 음량 증폭 | ✅ 완료 | ffmpeg only |
-| **P4** | **3페이지: Key 변환** | **🔲 다음 작업** | **Rubber Band CLI 설치 필요** |
-| P6 | 5페이지: 스템 분리/믹스 | 🔲 | Demucs(PyTorch) — 가장 무거움 |
-| P7 | 안정화 / README | 🔲 | |
+| P4 | 3페이지: Key 변환 | ✅ 완료 | ffmpeg rubberband 내장 필터 (외부 CLI 불필요) |
+| P6 | 5페이지: 스템 분리/믹스 | ✅ 완료 | Demucs htdemucs + ffmpeg amix |
+| **P7** | **안정화 / README** | **🔲 다음 작업** | |
 
 ---
 
@@ -238,7 +254,7 @@ python -m pytest app/tests/ -v
 |---|---|---|
 | ffmpeg / ffprobe | P0~ (현재) | `ffprobe -version` |
 | librosa | P3 (음원 분석) | `pip show librosa` |
-| Rubber Band CLI | P4 (Key 변환) ← **다음** | `rubberband --version` |
-| Demucs | P6 (스템 분리) | `python -m demucs --help` |
+| Rubber Band CLI | P4 (Key 변환) — **ffmpeg 내장 필터 사용으로 불필요** | — |
+| Demucs | P6 (스템 분리) — 완료 | `python -m demucs --help` |
 
 각 도구는 해당 페이지 착수 전에 설치 및 PATH 등록 확인 필요.

@@ -9,12 +9,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+import traceback
 
 from app.core.config import settings
 from app.core.errors import AppError
 from app.core.temp_manager import temp_manager
 from app.api.schemas.response import ApiResponse
-from app.api.routes import upload, file, download, session, cut, analyze, amplify
+from app.api.routes import upload, file, download, session, cut, analyze, amplify, key_shift, stems
 
 
 @asynccontextmanager
@@ -49,6 +50,15 @@ async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
     )
 
 
+@app.exception_handler(Exception)
+async def generic_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    traceback.print_exc()
+    return JSONResponse(
+        status_code=500,
+        content=ApiResponse.failure("INTERNAL_ERROR", "서버 내부 오류가 발생했습니다.").model_dump(),
+    )
+
+
 app.include_router(upload.router, prefix="/api")
 app.include_router(file.router, prefix="/api")
 app.include_router(download.router, prefix="/api")
@@ -56,6 +66,8 @@ app.include_router(session.router, prefix="/api")
 app.include_router(cut.router, prefix="/api")
 app.include_router(analyze.router, prefix="/api")
 app.include_router(amplify.router, prefix="/api")
+app.include_router(key_shift.router, prefix="/api")
+app.include_router(stems.router, prefix="/api/stems")
 
 
 @app.get("/api/health")

@@ -32,3 +32,21 @@ export function formatGainDbNum(db: number): string {
 export function formatGainDb(db: number): string {
   return formatGainDbNum(db) + ' dB'
 }
+
+/** 스템 ID → 한국어 라벨 */
+export function formatStemLabel(id: string): string {
+  const MAP: Record<string, string> = {
+    vocals: '보컬',
+    drums:  '드럼',
+    bass:   '베이스',
+    other:  '그 외',
+  }
+  return MAP[id] ?? id
+}
+
+/** "+3" | "-2" | "±0"  (semitone 표시용) */
+export function formatSemitone(semi: number): string {
+  if (semi > 0) return `+${semi}`
+  if (semi < 0) return `${semi}`
+  return '±0'
+}

@@ -35,6 +35,16 @@ export type IconName =
   | 'shield'
   | 'meter'
   | 'wave'
+  | 'music'
+  | 'arrow-right'
+  | 'minus'
+  | 'plus'
+  | 'reset'
+  | 'mic'
+  | 'drum'
+  | 'bass'
+  | 'other-stem'
+  | 'mix'
 
 interface IconProps {
   name: IconName
@@ -300,6 +310,78 @@ export function Icon({ name, className = 'w-4 h-4', stroke = 1.6 }: IconProps) {
       return (
         <svg {...common}>
           <path d="M3 12c1-4 2-6 3-6s2 4 3 6 2 6 3 6 2-4 3-6 2-4 3-4" />
+        </svg>
+      )
+    case 'music':
+      return (
+        <svg {...common}>
+          <path d="M9 18V5l10-2v13" />
+          <circle cx="6" cy="18" r="3" />
+          <circle cx="16" cy="16" r="3" />
+        </svg>
+      )
+    case 'arrow-right':
+      return (
+        <svg {...common}>
+          <path d="M5 12h14M13 5l7 7-7 7" />
+        </svg>
+      )
+    case 'minus':
+      return (
+        <svg {...common}>
+          <path d="M5 12h14" />
+        </svg>
+      )
+    case 'plus':
+      return (
+        <svg {...common}>
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+      )
+    case 'reset':
+      return (
+        <svg {...common}>
+          <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+          <path d="M3 3v5h5" />
+        </svg>
+      )
+    case 'mic':
+      return (
+        <svg {...common}>
+          <rect x="9" y="3" width="6" height="11" rx="3" />
+          <path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" />
+        </svg>
+      )
+    case 'drum':
+      return (
+        <svg {...common}>
+          <ellipse cx="12" cy="7" rx="8" ry="3" />
+          <path d="M4 7v9c0 1.7 3.6 3 8 3s8-1.3 8-3V7" />
+          <path d="M9 10v9M15 10v9" />
+        </svg>
+      )
+    case 'bass':
+      return (
+        <svg {...common}>
+          <circle cx="9" cy="16" r="3.5" />
+          <path d="M12 14V4l8 3-8 3" />
+        </svg>
+      )
+    case 'other-stem':
+      return (
+        <svg {...common}>
+          <path d="M9 18V6l10-2v12" />
+          <circle cx="6" cy="18" r="3" />
+          <circle cx="16" cy="16" r="3" />
+        </svg>
+      )
+    case 'mix':
+      return (
+        <svg {...common}>
+          <path d="M4 6h6M14 6h6M4 12h6M14 12h6M4 18h6M14 18h6" />
+          <circle cx="12" cy="6" r="2" />
+          <circle cx="12" cy="12" r="2" />
+          <circle cx="12" cy="18" r="2" />
         </svg>
       )
     default:

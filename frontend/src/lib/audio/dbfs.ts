@@ -40,6 +40,14 @@ export function computeStats(buffer: AudioBuffer): { rms: number; peak: number }
 }
 
 /**
+ * gainDb(-24~+12) → Web Audio linear gain value.
+ * db ≤ -24 → 0 (silence).
+ */
+export function dbToGain(db: number): number {
+  return db <= -24 ? 0 : Math.pow(10, db / 20)
+}
+
+/**
  * Map dBFS value to a 0~1 meter percentage.
  * -48 dBFS → 0%, 0 dBFS → 100%
  */
