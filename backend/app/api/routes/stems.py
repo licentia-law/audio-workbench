@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from app.api.schemas.response import ApiResponse
-from app.core.errors import AppError, FILE_NOT_FOUND, STEM_SEPARATION_FAILED
+from app.core.errors import AppError, FILE_NOT_FOUND, STEM_SEPARATION_FAILED, STEM_MIX_FAILED
 from app.services.upload_service import upload_service
 from app.services.stem_service import separate_stems
 from app.services.stem_mix_service import render_mix
@@ -50,7 +50,7 @@ async def mix_stems_endpoint(body: StemMixRequest) -> ApiResponse:
     for stem_id, db in body.gain_db.items():
         if not (-24.0 <= db <= 12.0):
             raise AppError(
-                STEM_SEPARATION_FAILED,
+                STEM_MIX_FAILED,
                 f"'{stem_id}' 게인 값이 범위를 벗어났습니다 ({db} dB).",
             )
 

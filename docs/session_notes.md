@@ -234,6 +234,25 @@ Frontend (신규 8개, 수정 4개 파일):
 
 ---
 
+### 2026-05-01 — P7 안정화/README 완료 (MVP 전 단계 완료)
+
+**완료한 것:**
+
+버그 수정 2건:
+- `api/routes/stems.py` — 믹스 게인 검증 에러 코드 오기 수정 (`STEM_SEPARATION_FAILED` → `STEM_MIX_FAILED`)
+- `hooks/useStemMixRender.ts` — Solo 로직 누락 수정: 솔로 채널 활성 시 non-solo 채널이 렌더에 포함되던 버그 제거 (Web Audio 미리듣기와 동작 일치)
+
+에러 코드 문서화:
+- `CLAUDE.md` 에러 코드 목록에 P6 코드 2종 추가
+
+README:
+- `README.md` 신규 작성 (한국어, 개인용): 환경/실행/기능/제한/구조/설치
+
+**남은 것:**
+- 없음. MVP P0~P7 전 단계 완료.
+
+---
+
 ### 2026-05-01 — P6 스템 분리/믹스 구현 완료 + 코드 리뷰 수정 5건 반영
 
 **완료한 것:**

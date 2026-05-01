@@ -33,10 +33,15 @@ export function useStemMixRender(): UseStemMixRenderReturn {
 
     const { stems, mixerState, originalName } = params
 
-    // 뮤트 해제 스템만 active_stems에 포함
-    const activeStems = STEM_IDS.filter(
-      id => !mixerState.channels[id].muted,
-    )
+    // 뮤트 해제 + 솔로 로직 반영 스템만 active_stems에 포함
+    // Solo가 있으면 솔로 채널만, 없으면 뮤트 해제 채널만
+    const anySolo = STEM_IDS.some(id => mixerState.channels[id].solo)
+    const activeStems = STEM_IDS.filter(id => {
+      const { muted, solo } = mixerState.channels[id]
+      if (muted) return false
+      if (anySolo && !solo) return false
+      return true
+    })
 
     // stem_artifact_ids: stem_id → artifact_id
     const stemArtifactIds = Object.fromEntries(

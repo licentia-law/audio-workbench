@@ -136,6 +136,8 @@ audio-workbench/
 - `ANALYSIS_FAILED` — 음원 분석 실패 (P3~)
 - `AMPLIFY_FAILED` — 음량 증폭 실패 (P5~)
 - `KEY_SHIFT_FAILED` — Key 변환 실패 (P4~)
+- `STEM_SEPARATION_FAILED` — 스템 분리 실패 (P6~)
+- `STEM_MIX_FAILED` — 믹스 렌더 실패 (P6~)
 
 ### 페이지 상태 (모든 페이지 공통)
 ```
@@ -216,7 +218,7 @@ empty → uploaded → processing → success
 | P5 | 4페이지: 음량 증폭 | ✅ 완료 | ffmpeg only |
 | P4 | 3페이지: Key 변환 | ✅ 완료 | ffmpeg rubberband 내장 필터 (외부 CLI 불필요) |
 | P6 | 5페이지: 스템 분리/믹스 | ✅ 완료 | Demucs htdemucs + ffmpeg amix |
-| **P7** | **안정화 / README** | **🔲 다음 작업** | |
+| P7 | 안정화 / README | ✅ 완료 | 버그 2건 수정, README 작성 |
 
 ---
 
