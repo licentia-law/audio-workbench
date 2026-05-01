@@ -35,6 +35,10 @@ export const apiService = {
     return request(`/file/${fileId}/waveform`)
   },
 
+  async getSessionInfo(): Promise<{ session_id: string; session_dir: string }> {
+    return request('/session')
+  },
+
   async deleteSession(sessionId: string): Promise<void> {
     await request(`/session/${sessionId}`, { method: 'DELETE' })
   },

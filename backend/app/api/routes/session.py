@@ -7,6 +7,17 @@ from app.core.temp_manager import temp_manager
 router = APIRouter(tags=["session"])
 
 
+@router.get("/session")
+async def get_session() -> ApiResponse:
+    return ApiResponse.success(
+        {
+            "session_id": temp_manager.session_id,
+            "session_dir": str(temp_manager.session_root),
+        },
+        "세션 정보를 반환합니다.",
+    )
+
+
 @router.delete("/session/{session_id}")
 async def delete_session(session_id: str) -> ApiResponse:
     if session_id != temp_manager.session_id:
