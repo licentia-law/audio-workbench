@@ -21,6 +21,49 @@
 
 ## 세션 기록
 
+### 2026-05-01 — P5 음량 증폭 구현 완료
+
+**완료한 것:**
+
+Backend (신규/수정 5개 파일):
+- `errors.py` — `AMPLIFY_FAILED` 추가
+- `filename_policy.py` — `amp_filename(original_name, gain_db)` 추가 (`song(+6dB).mp3` 형식)
+- `amplify_service.py` (신규) — ffmpeg volume filter + alimiter + volumedetect stats, `asyncio.to_thread` 패턴
+- `api/routes/amplify.py` (신규) — `POST /api/amplify` (gain_db -20~+20, anti_clip)
+- `main.py` — amplify 라우터 등록
+
+Frontend (신규 11개, 수정 3개 파일):
+- `types/index.ts` — `AmpStats`, `AmpResult` 타입 추가
+- `services/api.ts` — `apiService.amplify()` 추가
+- `lib/audio/dbfs.ts` (신규) — linToDb/dbToLin/computeStats/dbToPct 헬퍼
+- `lib/audio/amplify.ts` (신규) — createPreviewChain (GainNode + AnalyserNode)
+- `hooks/useGainPreview.ts` (신규) — Web Audio 실시간 미리듣기 + 레벨 미터 AnimationFrame
+- `components/icons/Icon.tsx` — sparkle/shield/meter/wave 아이콘 추가
+- `components/amplify/GainSliderPanel.tsx` (신규)
+- `components/amplify/LevelMeterPanel.tsx` (신규) — 32-세그먼트 LED
+- `components/amplify/AmpWaveformCard.tsx` (신규) — dim+hot 듀얼 SVG
+- `components/amplify/AmpControlBar.tsx` (신규)
+- `components/amplify/AmpResultCard.tsx` (신규)
+- `components/amplify/AmpGuidanceCard.tsx` (신규)
+- `pages/AmplifyPage/index.tsx` — 전면 재작성
+
+빌드 검증: `✓ built in 1.75s` (오류 0건)
+
+**남은 것 / 다음 세션에서 할 것:**
+- P4: Key 변환 (Rubber Band CLI) — 내부 단계 번호 P4, 사용자 기준 다음 페이지
+  - `rubberband --version` 설치 확인 필수
+  - `key_shift_service.py` + `POST /api/key-shift`
+  - semitone 선택 UI (±12 범위)
+  - `KeyShiftPage` 구현
+
+**주의사항 (P4 착수 시):**
+- Rubber Band CLI: Windows 별도 바이너리 다운로드 필요 (breakfastquay.com)
+- `asyncio.to_thread(subprocess.run, ...)` 패턴 유지 (Windows asyncio 정책)
+- Key shift 결과 파일명은 `filename_policy.py`에서만 생성
+- 새 에러 코드는 `errors.py`에 상수로 추가 후 import
+
+---
+
 ### 2026-04-30 — P0 공통 기반 구조 구축 완료 (DoD 전항목 통과)
 
 **완료한 것:**

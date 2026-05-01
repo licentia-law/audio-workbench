@@ -21,3 +21,14 @@ export function formatBitrate(bps: number | null | undefined): string {
   if (!bps) return '—'
   return `${Math.round(bps / 1000)} kbps`
 }
+
+/** "+6" | "-3.5" | "0"  (부호 포함, 단위 없음) */
+export function formatGainDbNum(db: number): string {
+  const sign = db > 0 ? '+' : ''
+  return sign + (db % 1 === 0 ? db.toFixed(0) : db.toFixed(1))
+}
+
+/** "+6 dB" | "-3.5 dB" | "0 dB" */
+export function formatGainDb(db: number): string {
+  return formatGainDbNum(db) + ' dB'
+}

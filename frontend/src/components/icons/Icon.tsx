@@ -31,6 +31,10 @@ export type IconName =
   | 'metronome'
   | 'gauge'
   | 'list'
+  | 'sparkle'
+  | 'shield'
+  | 'meter'
+  | 'wave'
 
 interface IconProps {
   name: IconName
@@ -267,6 +271,35 @@ export function Icon({ name, className = 'w-4 h-4', stroke = 1.6 }: IconProps) {
       return (
         <svg {...common}>
           <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+        </svg>
+      )
+    case 'sparkle':
+      return (
+        <svg {...common}>
+          <path d="M12 3v2M12 19v2M3 12h2M19 12h2M6.3 6.3l1.4 1.4M16.3 16.3l1.4 1.4M6.3 17.7l1.4-1.4M16.3 7.7l1.4-1.4" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      )
+    case 'shield':
+      return (
+        <svg {...common}>
+          <path d="M12 3 4 7v5c0 5 3.5 9.7 8 11 4.5-1.3 8-6 8-11V7z" />
+          <path d="m9 12 2 2 4-4" />
+        </svg>
+      )
+    case 'meter':
+      return (
+        <svg {...common}>
+          <rect x="3" y="6" width="2.5" height="12" rx="1" />
+          <rect x="7.5" y="9" width="2.5" height="9" rx="1" />
+          <rect x="12" y="4" width="2.5" height="14" rx="1" />
+          <rect x="16.5" y="7" width="2.5" height="11" rx="1" />
+        </svg>
+      )
+    case 'wave':
+      return (
+        <svg {...common}>
+          <path d="M3 12c1-4 2-6 3-6s2 4 3 6 2 6 3 6 2-4 3-6 2-4 3-4" />
         </svg>
       )
     default:

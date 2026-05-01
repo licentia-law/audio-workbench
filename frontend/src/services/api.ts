@@ -1,4 +1,4 @@
-import type { ApiResponse, FileMeta, CutResult, AnalysisResult } from '../types'
+import type { ApiResponse, FileMeta, CutResult, AnalysisResult, AmpResult } from '../types'
 
 const BASE = '/api'
 
@@ -47,5 +47,31 @@ export const apiService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ file_id: fileId }),
     })
+  },
+
+  async amplify(
+    fileId: string,
+    gainDb: number,
+    antiClip: boolean,
+  ): Promise<AmpResult> {
+    const raw = await request<{
+      artifact_id: string
+      suggested_filename: string
+      duration_seconds: number
+      size_bytes: number
+      rms_dbfs: number | null
+      peak_dbfs: number | null
+    }>('/amplify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file_id: fileId, gain_db: gainDb, anti_clip: antiClip }),
+    })
+    return {
+      artifactId: raw.artifact_id,
+      suggestedFilename: raw.suggested_filename,
+      durationSec: raw.duration_seconds,
+      sizeBytes: raw.size_bytes,
+      stats: { rmsDbfs: raw.rms_dbfs, peakDbfs: raw.peak_dbfs },
+    }
   },
 }

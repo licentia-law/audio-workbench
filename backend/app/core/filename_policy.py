@@ -18,3 +18,9 @@ def with_suffix(original_name: str, suffix: str) -> str:
 
 def cut_filename(original_name: str) -> str:
     return with_suffix(original_name, "cut")
+
+
+def amp_filename(original_name: str, gain_db: float) -> str:
+    sign = "+" if gain_db >= 0 else ""
+    formatted = f"{gain_db:.1f}".rstrip("0").rstrip(".")
+    return with_suffix(original_name, f"{sign}{formatted}dB")

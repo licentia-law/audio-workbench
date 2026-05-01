@@ -63,3 +63,16 @@ export interface AnalysisResult {
   loudness: LoudnessResult
   duration_seconds: number
 }
+
+export interface AmpStats {
+  rmsDbfs: number | null
+  peakDbfs: number | null
+}
+
+export interface AmpResult {
+  artifactId: string
+  suggestedFilename: string
+  durationSec: number
+  sizeBytes: number
+  stats: AmpStats
+}

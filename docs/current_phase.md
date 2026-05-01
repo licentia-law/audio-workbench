@@ -1,6 +1,6 @@
 # 현재 진행 단계
 
-- 최종 업데이트: 2026-05-01 (P3 완료 확정)
+- 최종 업데이트: 2026-05-01 (P5 음량 증폭 완료)
 
 ---
 
@@ -13,7 +13,7 @@
 | P2 | 1페이지: 음원 자르기 | ✅ 완료 |
 | P3 | 2페이지: 음원 분석 | ✅ 완료 |
 | P4 | 3페이지: Key 변환 | 🔲 대기 |
-| P5 | 4페이지: 음량 증폭 | 🔲 대기 |
+| P5 | 4페이지: 음량 증폭 | ✅ 완료 |
 | P6 | 5페이지: 스템 분리/믹스 | 🔲 대기 |
 | P7 | 안정화 / README | 🔲 대기 |
 
@@ -191,6 +191,48 @@
 - [x] C1: `analyze.py` `except Exception as e` → `except Exception` (미사용 변수)
 - [x] C2: `handleClear` `useCallback([playback, ...])` → 일반 함수 (불안정 dep 해소)
 - [x] C3: `IconName` export, `FootNotice` 로컬 타입 제거
+
+---
+
+---
+
+## P5 완료 내역 (2026-05-01)
+
+### Backend
+
+- [x] `app/core/errors.py` — `AMPLIFY_FAILED` 에러 코드 추가
+- [x] `app/core/filename_policy.py` — `amp_filename(original_name, gain_db)` 추가 (`song(+6dB).mp3` 형식)
+- [x] `app/services/amplify_service.py` (신규) — ffmpeg volume filter + alimiter, volumedetect 출력 측정
+  - anti_clip=True → `alimiter=limit=0.95:attack=5:release=50` 체인 추가
+  - `asyncio.to_thread(subprocess.run)` 패턴 (Windows asyncio 정책)
+  - volumedetect: stderr 파싱으로 mean_volume(RMS) / max_volume(Peak) 추출
+- [x] `app/api/routes/amplify.py` (신규) — `POST /api/amplify` (file_id, gain_db -20~+20, anti_clip)
+- [x] `app/main.py` — amplify 라우터 등록
+
+### Frontend
+
+- [x] `src/types/index.ts` — `AmpStats`, `AmpResult` 타입 추가
+- [x] `src/services/api.ts` — `apiService.amplify(fileId, gainDb, antiClip)` 추가 (snake_case → camelCase 변환)
+- [x] `src/lib/audio/dbfs.ts` (신규) — `linToDb`, `dbToLin`, `computeStats`, `dbToPct` 헬퍼
+- [x] `src/lib/audio/amplify.ts` (신규) — `createPreviewChain` (GainNode + AnalyserNode)
+- [x] `src/hooks/useGainPreview.ts` (신규) — Web Audio GainNode 실시간 미리듣기, 레벨 미터 AnimationFrame
+- [x] `src/components/icons/Icon.tsx` — `sparkle`, `shield`, `meter`, `wave` 아이콘 추가
+- [x] `src/components/amplify/GainSliderPanel.tsx` (신규) — 게인 슬라이더 (-20~+20 dB), 존 컬러링, Anti-Clip 토글
+- [x] `src/components/amplify/LevelMeterPanel.tsx` (신규) — 32-세그먼트 LED 레벨 미터 (cyan/amber/red 구간)
+- [x] `src/components/amplify/AmpWaveformCard.tsx` (신규) — dim(원본)+hot(증폭) 듀얼 레이어 SVG 파형
+- [x] `src/components/amplify/AmpControlBar.tsx` (신규) — 미리듣기/음량변환/초기화 3버튼 바
+- [x] `src/components/amplify/AmpResultCard.tsx` (신규) — 처리 중/성공/오류 3가지 상태 결과 카드
+- [x] `src/components/amplify/AmpGuidanceCard.tsx` (신규) — 게인/클리핑/anti-clip 상태 기반 동적 안내
+- [x] `src/pages/AmplifyPage/index.tsx` — 전면 재작성
+
+### 핵심 기술 결정
+
+- **Web Audio 미리듣기**: fetch `/api/file/{id}/audio` → Blob → AudioContext.decodeAudioData → GainNode 실시간 조정
+- **레벨 미터**: AnalyserNode `getFloatTimeDomainData` + requestAnimationFrame으로 실시간 peak 계산
+- **파형**: `/api/file/{id}/waveform` peaks 데이터 → dim(scale=1) + hot(scale=ampScale) 듀얼 SVG path
+- **클리핑 감지**: `ampScale * 0.95 > 1.0` 시 파형 hot 레이어 red, 경고 표시
+- **alimiter**: ffmpeg alimiter로 피크 제한 (anti_clip=True일 때)
+- **결과 stats**: ffmpeg volumedetect stderr 파싱으로 RMS/Peak 측정
 
 ---
 

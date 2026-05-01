@@ -86,19 +86,21 @@ audio-workbench/
 │  │  ├─ feedback/        # StatusBadge, InfoMessageCard, Badge
 │  │  ├─ result/          # FileMetaCard, ResultFileCard, DownloadButton
 │  │  ├─ trim/            # WaveformCard, SelectionInfo, ControlBar, ResultCard, GuidanceCard
-│  │  └─ analyze/         # RunBar, ResultBigCard, NoticeCard, LoudnessCard, StepListCard, FootNotice
+│  │  ├─ analyze/         # RunBar, ResultBigCard, NoticeCard, LoudnessCard, StepListCard, FootNotice
+│  │  └─ amplify/         # GainSliderPanel, LevelMeterPanel, AmpWaveformCard, AmpControlBar, AmpResultCard, AmpGuidanceCard
 │  ├─ hooks/              # useAudioPlayer, useProcessingPage, useAudioPlayback, useAnalysisJob,
-│  │                      # useTrimSelection, useTrimPlayback(re-export)
-│  ├─ utils/              # format.ts (formatBytes, formatDuration, formatSampleRate, formatBitrate)
+│  │                      # useTrimSelection, useTrimPlayback(re-export), useGainPreview
+│  ├─ lib/audio/          # dbfs.ts (linToDb/dbToLin/computeStats/dbToPct SSOT)
+│  ├─ utils/              # format.ts (formatBytes/Duration/SampleRate/Bitrate/GainDb/GainDbNum)
 │  ├─ services/api.ts     # fetch 래퍼, 공통 에러 핸들링
 │  ├─ stores/fileStore.ts # Zustand 전역 파일 상태
 │  └─ types/index.ts      # 공통 타입
 ├─ backend/app/
 │  ├─ main.py             # FastAPI 앱, lifespan, CORS, 에러 핸들러
-│  ├─ api/routes/         # upload, file, download, session, cut, analyze
+│  ├─ api/routes/         # upload, file, download, session, cut, analyze, amplify
 │  ├─ api/schemas/        # ApiResponse 스키마
 │  ├─ core/               # config, temp_manager, filename_policy, errors, artifact_registry
-│  └─ services/           # upload_service, cut_service, analysis_service
+│  └─ services/           # upload_service, cut_service, analysis_service, amplify_service
 ├─ docs/                  # PRD, DTL, 디자인 문서
 └─ scripts/               # run_backend.ps1, run_frontend.ps1, session_context.ps1
 ```
@@ -129,6 +131,7 @@ audio-workbench/
 - `FFPROBE_ERROR` — 오디오 처리 실패
 - `INVALID_CUT_RANGE` — 자르기 범위 오류 (P2~)
 - `ANALYSIS_FAILED` — 음원 분석 실패 (P3~)
+- `AMPLIFY_FAILED` — 음량 증폭 실패 (P5~)
 
 ### 페이지 상태 (모든 페이지 공통)
 ```
@@ -174,6 +177,12 @@ empty → uploaded → processing → success
 | **LoudnessCard** | **components/analyze/** | **✅ P3 완료** |
 | **StepListCard** | **components/analyze/** | **✅ P3 완료** |
 | **FootNotice** | **components/analyze/** | **✅ P3 완료** |
+| **GainSliderPanel** | **components/amplify/** | **✅ P5 완료** |
+| **LevelMeterPanel** | **components/amplify/** | **✅ P5 완료** |
+| **AmpWaveformCard** | **components/amplify/** | **✅ P5 완료** |
+| **AmpControlBar** | **components/amplify/** | **✅ P5 완료** |
+| **AmpResultCard** | **components/amplify/** | **✅ P5 완료** |
+| **AmpGuidanceCard** | **components/amplify/** | **✅ P5 완료** |
 
 ---
 
@@ -186,7 +195,7 @@ empty → uploaded → processing → success
 | P2 | 1페이지: 음원 자르기 | ✅ 완료 |
 | P3 | 2페이지: 음원 분석 | ✅ 완료 |
 | P4 | 3페이지: Key 변환 | 🔲 |
-| P5 | 4페이지: 음량 증폭 | 🔲 |
+| P5 | 4페이지: 음량 증폭 | ✅ 완료 |
 | P6 | 5페이지: 스템 분리/믹스 | 🔲 |
 | P7 | 안정화 / README | 🔲 |
 
