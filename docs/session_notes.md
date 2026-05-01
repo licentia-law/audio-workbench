@@ -47,7 +47,7 @@ Frontend (신규 11개, 수정 3개 파일):
 - `components/amplify/AmpGuidanceCard.tsx` (신규)
 - `pages/AmplifyPage/index.tsx` — 전면 재작성
 
-빌드 검증: `✓ built in 1.75s` (오류 0건)
+빌드 검증: `✓ built in 1.65s` (오류 0건, 리뷰 수정 C1~C8 + 버튼 색상 수정 포함)
 
 **남은 것 / 다음 세션에서 할 것:**
 - P4: Key 변환 (Rubber Band CLI) — 내부 단계 번호 P4, 사용자 기준 다음 페이지
@@ -56,8 +56,13 @@ Frontend (신규 11개, 수정 3개 파일):
   - semitone 선택 UI (±12 범위)
   - `KeyShiftPage` 구현
 
-**주의사항 (P4 착수 시):**
-- Rubber Band CLI: Windows 별도 바이너리 다운로드 필요 (breakfastquay.com)
+**P5(StemMixPage) 착수 시 주의사항:**
+- Demucs 설치 확인 필수 (`python -m demucs --help`)
+- 분리 처리 시간이 길어 진행 상태 표시 중요 (P3 StepListCard 패턴 참고 가능)
+- 스템 믹스 결과 파일명 규칙은 `filename_policy.py`에서만 생성
+
+**P4(KeyShiftPage) 미구현 상태:**
+- Rubber Band CLI 설치 확인 필수 (`rubberband --version`)
 - `asyncio.to_thread(subprocess.run, ...)` 패턴 유지 (Windows asyncio 정책)
 - Key shift 결과 파일명은 `filename_policy.py`에서만 생성
 - 새 에러 코드는 `errors.py`에 상수로 추가 후 import
@@ -187,6 +192,45 @@ Frontend (신규 11개, 수정 6개 파일):
 - `asyncio.to_thread(subprocess.run, ...)` 패턴 유지 (Windows asyncio 정책)
 - Key shift 결과 파일명은 `filename_policy.py`에서만 생성 (프론트 하드코딩 금지)
 - 새 에러 코드는 반드시 `errors.py`에 상수로 추가 후 import
+
+---
+
+### 2026-05-01 — P4 (4페이지) 음량 증폭 구현 완료
+
+**완료한 것:**
+
+Backend (신규/수정 4개 파일):
+- `amplify_service.py` (신규) — ffmpeg volume filter + alimiter, volumedetect stderr 파싱으로 RMS/Peak 측정
+  - `asyncio.to_thread(subprocess.run)` 패턴 (Windows asyncio 정책)
+  - anti_clip=True → `alimiter=limit=0.95:attack=5:release=50` 체인 추가
+- `api/routes/amplify.py` (신규) — `POST /api/amplify`
+- `errors.py` — `AMPLIFY_FAILED` 추가
+- `filename_policy.py` — `amp_filename(original_name, gain_db)` 추가 (`song(+6dB).mp3` 형식)
+- `main.py` — amplify 라우터 등록
+
+Frontend (신규 8개, 수정 4개 파일):
+- `hooks/useGainPreview.ts` (신규) — Web Audio GainNode 실시간 미리듣기 + AnalyserNode 레벨 미터
+- `lib/audio/dbfs.ts` (신규) — `linToDb`, `dbToLin`, `computeStats`, `dbToPct` 헬퍼
+- `lib/audio/amplify.ts` (신규) — `createPreviewChain` (GainNode + AnalyserNode)
+- `components/icons/Icon.tsx` — sparkle/shield/meter/wave 아이콘 추가
+- `components/amplify/` 6종 (신규): GainSliderPanel, LevelMeterPanel, AmpWaveformCard, AmpControlBar, AmpResultCard, AmpGuidanceCard
+- `pages/AmplifyPage/index.tsx` — 전면 재작성
+- `types/index.ts` — AmpStats, AmpResult 타입 추가
+- `services/api.ts` — `amplify()` 추가
+
+**남은 것 / 다음 세션에서 할 것:**
+- P5(내부): Key 변환 (3페이지 — Rubber Band CLI)
+  - `rubberband --version` 설치 확인 필수 (Windows 별도 바이너리 다운로드)
+  - `key_shift_service.py` + `POST /api/key-shift`
+  - semitone 선택 UI (±12 범위)
+  - `KeyShiftPage` 구현
+- P6(내부): 스템 분리/믹스 (5페이지 — Demucs)
+- P7: 안정화 / README
+
+**주의사항 (Key 변환 착수 시):**
+- Rubber Band CLI 바이너리: https://breakfastquay.com/rubberband/ 에서 Windows용 다운로드 후 PATH 등록
+- `asyncio.to_thread(subprocess.run, ...)` 패턴 유지
+- `UploadCard` 재사용 (`inputId="keyshift-file-input"`)
 
 ---
 

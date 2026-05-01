@@ -188,16 +188,19 @@ empty → uploaded → processing → success
 
 ## 구현 단계 현황
 
-| 단계 | 내용 | 상태 |
-|---|---|---|
-| P0 | 공통 기반 구조 (백엔드 API + 프론트 스캐폴딩) | ✅ 완료 |
-| P1 | 공통 오디오 UX (Player, WaveformPanel, 상태 전환 프레임) | ✅ 완료 |
-| P2 | 1페이지: 음원 자르기 | ✅ 완료 |
-| P3 | 2페이지: 음원 분석 | ✅ 완료 |
-| P4 | 3페이지: Key 변환 | 🔲 |
-| P5 | 4페이지: 음량 증폭 | ✅ 완료 |
-| P6 | 5페이지: 스템 분리/믹스 | 🔲 |
-| P7 | 안정화 / README | 🔲 |
+> **실제 구현 순서:** P2 → P3 → P5 → P4 → P6
+> (단순·독립적인 것부터, 외부 도구 의존도 낮은 것부터)
+
+| 단계 | 내용 | 상태 | 비고 |
+|---|---|---|---|
+| P0 | 공통 기반 구조 (백엔드 API + 프론트 스캐폴딩) | ✅ 완료 | |
+| P1 | 공통 오디오 UX (Player, WaveformPanel, 상태 전환 프레임) | ✅ 완료 | |
+| P2 | 1페이지: 음원 자르기 | ✅ 완료 | ffmpeg only |
+| P3 | 2페이지: 음원 분석 | ✅ 완료 | librosa |
+| P5 | 4페이지: 음량 증폭 | ✅ 완료 | ffmpeg only |
+| **P4** | **3페이지: Key 변환** | **🔲 다음 작업** | **Rubber Band CLI 설치 필요** |
+| P6 | 5페이지: 스템 분리/믹스 | 🔲 | Demucs(PyTorch) — 가장 무거움 |
+| P7 | 안정화 / README | 🔲 | |
 
 ---
 
@@ -235,7 +238,7 @@ python -m pytest app/tests/ -v
 |---|---|---|
 | ffmpeg / ffprobe | P0~ (현재) | `ffprobe -version` |
 | librosa | P3 (음원 분석) | `pip show librosa` |
-| Rubber Band CLI | P4 (Key 변환) | `rubberband --version` |
+| Rubber Band CLI | P4 (Key 변환) ← **다음** | `rubberband --version` |
 | Demucs | P6 (스템 분리) | `python -m demucs --help` |
 
 각 도구는 해당 페이지 착수 전에 설치 및 PATH 등록 확인 필요.
