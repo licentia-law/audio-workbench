@@ -39,7 +39,7 @@
 ### Backend (port 8000)
 - Python 3.11+ / FastAPI / Uvicorn
 - ffmpeg / ffprobe (오디오 처리 기반)
-- librosa (BPM/Key 추정 — P3에서 연결)
+- librosa (BPM/Key 추정 — P3 연결 완료)
 - Rubber Band CLI (key shift, 템포 유지 — P4에서 연결)
 - Demucs (stem 분리 — P6에서 연결)
 
@@ -80,21 +80,25 @@ audio-workbench/
 │  ├─ pages/              # 5개 페이지 (CutPage, AnalyzePage, KeyShiftPage, AmplifyPage, StemMixPage)
 │  ├─ components/
 │  │  ├─ layout/          # AppSidebar, PageHeader, AppLayout, ProcessingPageShell
-│  │  ├─ upload/          # FileUploadCard
+│  │  ├─ upload/          # FileUploadCard (P0/P1 구형), UploadCard (P2+ 공용)
 │  │  ├─ player/          # PrimaryPlayer
 │  │  ├─ waveform/        # WaveformPanel
-│  │  ├─ feedback/        # StatusBadge, InfoMessageCard
-│  │  └─ result/          # FileMetaCard, ResultFileCard, DownloadButton
-│  ├─ hooks/              # useAudioPlayer, useProcessingPage
+│  │  ├─ feedback/        # StatusBadge, InfoMessageCard, Badge
+│  │  ├─ result/          # FileMetaCard, ResultFileCard, DownloadButton
+│  │  ├─ trim/            # WaveformCard, SelectionInfo, ControlBar, ResultCard, GuidanceCard
+│  │  └─ analyze/         # RunBar, ResultBigCard, NoticeCard, LoudnessCard, StepListCard, FootNotice
+│  ├─ hooks/              # useAudioPlayer, useProcessingPage, useAudioPlayback, useAnalysisJob,
+│  │                      # useTrimSelection, useTrimPlayback(re-export)
+│  ├─ utils/              # format.ts (formatBytes, formatDuration, formatSampleRate, formatBitrate)
 │  ├─ services/api.ts     # fetch 래퍼, 공통 에러 핸들링
 │  ├─ stores/fileStore.ts # Zustand 전역 파일 상태
 │  └─ types/index.ts      # 공통 타입
 ├─ backend/app/
 │  ├─ main.py             # FastAPI 앱, lifespan, CORS, 에러 핸들러
-│  ├─ api/routes/         # upload, file, download, session
+│  ├─ api/routes/         # upload, file, download, session, cut, analyze
 │  ├─ api/schemas/        # ApiResponse 스키마
-│  ├─ core/               # config, temp_manager, filename_policy, errors
-│  └─ services/           # 비즈니스 로직 (upload_service 등)
+│  ├─ core/               # config, temp_manager, filename_policy, errors, artifact_registry
+│  └─ services/           # upload_service, cut_service, analysis_service
 ├─ docs/                  # PRD, DTL, 디자인 문서
 └─ scripts/               # run_backend.ps1, run_frontend.ps1, session_context.ps1
 ```
@@ -123,6 +127,8 @@ audio-workbench/
 - `FILE_NOT_FOUND` — 파일 ID 없음
 - `SESSION_NOT_FOUND` — 세션 ID 없음
 - `FFPROBE_ERROR` — 오디오 처리 실패
+- `INVALID_CUT_RANGE` — 자르기 범위 오류 (P2~)
+- `ANALYSIS_FAILED` — 음원 분석 실패 (P3~)
 
 ### 페이지 상태 (모든 페이지 공통)
 ```
@@ -147,9 +153,11 @@ empty → uploaded → processing → success
 | PageHeader | components/layout/ | ✅ P0 완료 |
 | AppLayout | components/layout/ | ✅ P0 완료 |
 | ProcessingPageShell | components/layout/ | ✅ P1 완료 |
-| FileUploadCard | components/upload/ | ✅ P0 완료 |
+| FileUploadCard | components/upload/ | ✅ P0 완료 (P0/P1 구형 토큰, P2+에서는 UploadCard 사용) |
+| **UploadCard** | **components/upload/** | **✅ P3 완료 (P2+ 공용, inputId prop으로 페이지 구분)** |
 | FileMetaCard | components/result/ | ✅ P0 완료 |
 | StatusBadge | components/feedback/ | ✅ P0 완료 |
+| Badge | components/feedback/ | ✅ P2 완료 |
 | InfoMessageCard | components/feedback/ | ✅ P1 완료 |
 | PrimaryPlayer | components/player/ | ✅ P1 완료 |
 | WaveformPanel | components/waveform/ | ✅ P1 완료 |
@@ -160,6 +168,12 @@ empty → uploaded → processing → success
 | ControlBar (trim) | components/trim/ | ✅ P2 완료 |
 | ResultCard (trim) | components/trim/ | ✅ P2 완료 |
 | GuidanceCard | components/trim/ | ✅ P2 완료 |
+| **RunBar** | **components/analyze/** | **✅ P3 완료** |
+| **ResultBigCard** | **components/analyze/** | **✅ P3 완료** |
+| **NoticeCard** | **components/analyze/** | **✅ P3 완료** |
+| **LoudnessCard** | **components/analyze/** | **✅ P3 완료** |
+| **StepListCard** | **components/analyze/** | **✅ P3 완료** |
+| **FootNotice** | **components/analyze/** | **✅ P3 완료** |
 
 ---
 
@@ -170,7 +184,7 @@ empty → uploaded → processing → success
 | P0 | 공통 기반 구조 (백엔드 API + 프론트 스캐폴딩) | ✅ 완료 |
 | P1 | 공통 오디오 UX (Player, WaveformPanel, 상태 전환 프레임) | ✅ 완료 |
 | P2 | 1페이지: 음원 자르기 | ✅ 완료 |
-| P3 | 2페이지: 음원 분석 | 🔲 |
+| P3 | 2페이지: 음원 분석 | ✅ 완료 |
 | P4 | 3페이지: Key 변환 | 🔲 |
 | P5 | 4페이지: 음량 증폭 | 🔲 |
 | P6 | 5페이지: 스템 분리/믹스 | 🔲 |

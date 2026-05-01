@@ -1,4 +1,4 @@
-import type { ApiResponse, FileMeta, CutResult } from '../types'
+import type { ApiResponse, FileMeta, CutResult, AnalysisResult } from '../types'
 
 const BASE = '/api'
 
@@ -38,6 +38,14 @@ export const apiService = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ file_id: fileId, ...params }),
+    })
+  },
+
+  async analyze(fileId: string): Promise<AnalysisResult> {
+    return request<AnalysisResult>('/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file_id: fileId }),
     })
   },
 }

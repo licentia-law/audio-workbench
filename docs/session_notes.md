@@ -95,6 +95,58 @@
 
 ---
 
+### 2026-05-01 — P3 음원 분석 구현 완료 + 리뷰 수정 전항목 반영
+
+**완료한 것:**
+
+Backend (신규/수정 4개 파일):
+- `analysis_service.py` (신규) — librosa 기반 Key/BPM/Loudness 3종 분석, 모든 호출 `asyncio.to_thread`
+  - Key: Krumhansl-Schmuckler 12키 프로파일 매칭, confidence < 0.4 → unknown
+  - BPM: `beat_track` + onset strength confidence, `np.asarray(tempo).item()` (NumPy 1.25+ 안전)
+  - 음량: Peak dBFS / RMS avg dBFS
+- `api/routes/analyze.py` (신규) — `POST /api/analyze`
+- `errors.py` — `ANALYSIS_FAILED` 추가
+- `main.py` — analyze 라우터 등록
+
+Frontend (신규 11개, 수정 6개 파일):
+- `hooks/useAnalysisJob.ts` (신규) — STEP_DEFS SSOT, setInterval 진행 시뮬레이션, `overallProgress` 반환
+- `hooks/useAudioPlayback.ts` (신규) — `useTrimPlayback` 이름 변경 (기능 동일)
+- `hooks/useTrimPlayback.ts` — re-export 파일로 교체 (하위 호환)
+- `utils/format.ts` (신규) — formatBytes/Duration/SampleRate/Bitrate SSOT
+- `components/upload/UploadCard.tsx` (신규) — P2+ 공용 업로드 카드 (`inputId` prop)
+- `components/icons/Icon.tsx` — metronome/gauge/list 아이콘 추가, `IconName` export
+- `components/analyze/` 6종 (신규): RunBar, ResultBigCard, NoticeCard, LoudnessCard, StepListCard, FootNotice
+- `pages/AnalyzePage/index.tsx` — 전면 재작성
+- `pages/CutPage/index.tsx` — UploadCard + useAudioPlayback 적용
+- `types/index.ts` — 분석 관련 타입 6종 추가
+- `services/api.ts` — `analyze()` 추가
+
+리뷰 수정 7건 (A1~C3) 전항목 반영 완료.
+
+**핵심 트러블슈팅:**
+- librosa BPM: `librosa.beat.beat_track` 반환 `numpy.ndarray(1,)` → `float()` 직접 호출 시 NumPy 1.25+ deprecation
+  → `float(np.asarray(tempo).item())`으로 해결
+- numpy import가 사용 지점보다 아래에 있었음 → 함수 상단으로 이동
+- Tailwind `line2` 토큰: 이전 세션에서 `line: { 2: '...' }` → `border-line-2` (하이픈) 생성 버그
+  → `line2: '#2A3358'` 플랫 키로 수정 완료 (P2~P3 경계)
+
+**남은 것 / 다음 세션에서 할 것:**
+- P4: Key 변환 (Rubber Band CLI)
+  - `rubberband --version` 설치 확인 필수
+  - `key_shift_service.py` + `POST /api/key-shift`
+  - semitone 선택 UI (±12 범위)
+  - `KeyShiftPage` 구현
+
+**주의사항 (P4 착수 시):**
+- Rubber Band CLI는 ffmpeg과 달리 Windows 별도 바이너리 다운로드 필요 (Breakfastquay rubberband-win)
+- P3에서 완성된 `UploadCard` 공통 컴포넌트 그대로 재사용 (`inputId="keyshift-file-input"`)
+- P3에서 완성된 `useAudioPlayback` 훅 그대로 재사용
+- `asyncio.to_thread(subprocess.run, ...)` 패턴 유지 (Windows asyncio 정책)
+- Key shift 결과 파일명은 `filename_policy.py`에서만 생성 (프론트 하드코딩 금지)
+- 새 에러 코드는 반드시 `errors.py`에 상수로 추가 후 import
+
+---
+
 ### 2026-04-30 — P2 음원 자르기 구현 완료
 
 **완료한 것:**

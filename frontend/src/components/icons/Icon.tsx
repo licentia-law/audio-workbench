@@ -1,4 +1,4 @@
-type IconName =
+export type IconName =
   | 'logo'
   | 'scissors'
   | 'analyze'
@@ -28,6 +28,9 @@ type IconName =
   | 'volume-low'
   | 'speaker'
   | 'dots'
+  | 'metronome'
+  | 'gauge'
+  | 'list'
 
 interface IconProps {
   name: IconName
@@ -243,6 +246,27 @@ export function Icon({ name, className = 'w-4 h-4', stroke = 1.6 }: IconProps) {
           <circle cx="6" cy="12" r="1.2" fill="currentColor" />
           <circle cx="12" cy="12" r="1.2" fill="currentColor" />
           <circle cx="18" cy="12" r="1.2" fill="currentColor" />
+        </svg>
+      )
+    case 'metronome':
+      return (
+        <svg {...common}>
+          <path d="M8 3h8l3 18H5z" />
+          <path d="M12 21V8M12 8l5-3" />
+        </svg>
+      )
+    case 'gauge':
+      return (
+        <svg {...common}>
+          <path d="M4 18a8 8 0 1 1 16 0" />
+          <path d="M12 18 16 9" />
+          <circle cx="12" cy="18" r="1.2" fill="currentColor" />
+        </svg>
+      )
+    case 'list':
+      return (
+        <svg {...common}>
+          <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
         </svg>
       )
     default:

@@ -1,6 +1,6 @@
 # 현재 진행 단계
 
-- 최종 업데이트: 2026-04-30 (P2 완료 확정)
+- 최종 업데이트: 2026-05-01 (P3 완료 확정)
 
 ---
 
@@ -11,7 +11,7 @@
 | P0 | 공통 기반 구조 | ✅ 완료 |
 | P1 | 공통 오디오 UX | ✅ 완료 |
 | P2 | 1페이지: 음원 자르기 | ✅ 완료 |
-| P3 | 2페이지: 음원 분석 | 🔲 대기 |
+| P3 | 2페이지: 음원 분석 | ✅ 완료 |
 | P4 | 3페이지: Key 변환 | 🔲 대기 |
 | P5 | 4페이지: 음량 증폭 | 🔲 대기 |
 | P6 | 5페이지: 스템 분리/믹스 | 🔲 대기 |
@@ -136,12 +136,71 @@
 
 ---
 
-## 다음 단계: P3 — 음원 분석
+---
 
-### P3 착수 전 체크
-- [ ] `docs/ui_design_reference/` 해당 페이지 시안 확정
-- [ ] BPM / Key 분석 파라미터 확정
-- [ ] `librosa` 설치 확인 (`pip show librosa`)
-- [ ] `analyze_service.py` 서비스 파일 생성
-- [ ] `POST /api/analyze` 라우터 추가
-- [ ] `AnalyzePage` UI 설계 (결과 표시 방식 확정)
+## P3 완료 내역 (2026-05-01)
+
+### Backend
+
+- [x] `app/core/errors.py` — `ANALYSIS_FAILED` 에러 코드 추가
+- [x] `app/services/analysis_service.py` (신규) — librosa 기반 5단계 분석
+  - Key 추정: Krumhansl-Schmuckler 프로파일 + `chroma_cqt`, confidence < 0.4 → unknown
+  - BPM 추정: `librosa.beat.beat_track`, onset strength confidence, `np.asarray(tempo).item()` (NumPy 1.25+ 호환)
+  - 음량 측정: Peak / RMS dBFS
+  - 모든 CPU-blocking 호출 → `asyncio.to_thread` (Windows asyncio 정책)
+- [x] `app/api/routes/analyze.py` (신규) — `POST /api/analyze` (file_id → AnalysisResult)
+- [x] `app/main.py` — analyze 라우터 등록
+
+### Frontend
+
+- [x] `src/types/index.ts` — `StepStatus`, `StepKey`, `AnalysisStep`, `KeyResult`, `BpmResult`, `LoudnessResult`, `AnalysisResult` 타입 추가
+- [x] `src/services/api.ts` — `apiService.analyze(fileId)` 추가
+- [x] `src/hooks/useAnalysisJob.ts` (신규)
+  - STEP_DEFS 5종 (decode 10% / peaks 20% / key 40% / bpm 25% / loudness 5%) — SSOT
+  - setInterval 시뮬레이션 0→0.95 (5초 기준), API 완료 시 전 단계 done
+  - `overallProgress` 훅 내부에서 계산·반환 (페이지 중복 weights 불필요)
+- [x] `src/hooks/useAudioPlayback.ts` (신규) — `useTrimPlayback` 이름 변경 (기능 동일)
+- [x] `src/hooks/useTrimPlayback.ts` — `useAudioPlayback` re-export로 교체 (하위 호환)
+- [x] `src/utils/format.ts` (신규) — `formatBytes`, `formatDuration`, `formatSampleRate`, `formatBitrate` SSOT
+- [x] `src/components/upload/UploadCard.tsx` (신규) — P2+ 공용 업로드 카드 (`inputId` prop)
+- [x] `src/components/icons/Icon.tsx` — `metronome`, `gauge`, `list` 아이콘 추가; `IconName` 타입 export
+- [x] `src/components/analyze/RunBar.tsx` (신규) — 재생/정지 + 분석 실행 버튼 바
+- [x] `src/components/analyze/ResultBigCard.tsx` (신규) — Key/BPM 대형 결과 카드 (success/processing/error/idle 상태)
+- [x] `src/components/analyze/NoticeCard.tsx` (신규) — 분석 안내 카드 (SVG wave 모티프)
+- [x] `src/components/analyze/LoudnessCard.tsx` (신규) — Peak/RMS dBFS 미터 (green→amber→red 그라데이션)
+- [x] `src/components/analyze/StepListCard.tsx` (신규) — 5단계 진행 목록 (아이콘+라벨+프로그레스바+%)
+- [x] `src/components/analyze/FootNotice.tsx` (신규) — warn/err/ok 3종 하단 안내 배너 (IconName 타입 활용)
+- [x] `src/pages/AnalyzePage/index.tsx` — 전면 재작성 (UploadCard + RunBar + 3열 + 2열 레이아웃)
+- [x] `src/pages/CutPage/index.tsx` — UploadCard + useAudioPlayback으로 교체 (인라인 UploadSection 제거)
+- [x] `src/components/result/FileMetaCard.tsx` — `utils/format` import로 교체
+
+### 핵심 기술 결정
+
+- **librosa Windows**: CPU-blocking → 모든 librosa/numpy 호출 `asyncio.to_thread` 필수
+- **NumPy 1.25+ 호환**: `librosa.beat.beat_track` 반환값 → `float(np.asarray(tempo).item())`
+- **양쪽 unknown → error**: Key+BPM 모두 unknown이면 `pageStatus='error'`, 하나만이면 success+warn
+- **진행 시뮬레이션**: API 실행 중 setInterval로 0→0.95 시각적 진행, 완료 시 전 단계 100%
+- **SSOT 확립**: STEP weights는 `useAnalysisJob` 단 한 곳, 포맷 헬퍼는 `utils/format.ts` 단 한 곳
+
+### 리뷰 후 수정 내역 (A1~C3)
+- [x] A1: `useAnalysisJob`에서 `overallProgress` 계산·반환, AnalyzePage 중복 weights 제거
+- [x] A2: `utils/format.ts` 신규, CutPage/AnalyzePage/FileMetaCard 3중 중복 제거
+- [x] A3: BPM tempo `np.asarray(tempo).item()` 타입 안전 수정 + numpy import 위치 교정
+- [x] B1: `UploadCard` 공통 컴포넌트 추출, 두 페이지 인라인 코드 제거
+- [x] B2: `useAudioPlayback` 이름 변경, `useTrimPlayback` re-export 유지
+- [x] C1: `analyze.py` `except Exception as e` → `except Exception` (미사용 변수)
+- [x] C2: `handleClear` `useCallback([playback, ...])` → 일반 함수 (불안정 dep 해소)
+- [x] C3: `IconName` export, `FootNotice` 로컬 타입 제거
+
+---
+
+## 다음 단계: P4 — Key 변환
+
+### P4 착수 전 체크
+- [ ] `docs/ui_design_reference/claude_design/` P4 시안 확정
+- [ ] Rubber Band CLI 설치 확인 (`rubberband --version`)
+- [ ] `errors.py`에 `KEY_SHIFT_FAILED` 에러 코드 추가
+- [ ] `filename_policy.py`에 key shift 결과 파일명 규칙 추가
+- [ ] `key_shift_service.py` 서비스 파일 생성
+- [ ] `POST /api/key-shift` 라우터 추가
+- [ ] `KeyShiftPage` UI 설계 (semitone 선택 UI 확정)

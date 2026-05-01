@@ -1,18 +1,8 @@
 import type { FileMeta } from '../../types'
+import { formatBytes, formatDuration } from '../../utils/format'
 
 interface FileMetaCardProps {
   meta: FileMeta
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
-}
-
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-  const s = Math.floor(seconds % 60)
-  return `${m}:${String(s).padStart(2, '0')}`
 }
 
 export function FileMetaCard({ meta }: FileMetaCardProps) {

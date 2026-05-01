@@ -14,7 +14,7 @@ from app.core.config import settings
 from app.core.errors import AppError
 from app.core.temp_manager import temp_manager
 from app.api.schemas.response import ApiResponse
-from app.api.routes import upload, file, download, session, cut
+from app.api.routes import upload, file, download, session, cut, analyze
 
 
 @asynccontextmanager
@@ -54,6 +54,7 @@ app.include_router(file.router, prefix="/api")
 app.include_router(download.router, prefix="/api")
 app.include_router(session.router, prefix="/api")
 app.include_router(cut.router, prefix="/api")
+app.include_router(analyze.router, prefix="/api")
 
 
 @app.get("/api/health")

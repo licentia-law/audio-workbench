@@ -27,3 +27,39 @@ export interface CutResult {
   duration_seconds: number
   size_bytes: number
 }
+
+export type StepStatus = 'idle' | 'active' | 'done' | 'error'
+export type StepKey = 'decode' | 'peaks' | 'key' | 'bpm' | 'loudness'
+
+export interface AnalysisStep {
+  key: StepKey
+  label: string
+  status: StepStatus
+  progress: number
+}
+
+export interface KeyResult {
+  pretty: string
+  tonic: string | null
+  mode: 'major' | 'minor' | null
+  confidence: number
+  unknown: boolean
+}
+
+export interface BpmResult {
+  bpm: number | null
+  confidence: number
+  unknown: boolean
+}
+
+export interface LoudnessResult {
+  peak_db: number
+  rms_db: number
+}
+
+export interface AnalysisResult {
+  key: KeyResult
+  bpm: BpmResult
+  loudness: LoudnessResult
+  duration_seconds: number
+}
