@@ -27,8 +27,17 @@ async def key_shift_mp3(
         [
             "ffmpeg", "-y",
             "-i", str(input_path),
-            "-af", f"rubberband=pitch={pitch_scale:.6f}:pitchq=quality",
-            "-codec:a", "libmp3lame", "-b:a", "192k",
+            "-af", (
+                f"rubberband=pitch={pitch_scale:.6f}"
+                ":pitchq=quality"
+                ":transients=smooth"
+                ":phase=independent"
+                ":window=long"
+                ":smoothing=on"
+                ":formant=preserved"
+                ":channels=together"
+            ),
+            "-codec:a", "libmp3lame", "-q:a", "0",
             str(output_path),
         ],
         capture_output=True,
