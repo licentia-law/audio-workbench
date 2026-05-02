@@ -15,6 +15,7 @@ async def key_shift_mp3(
     semitones: int,
     tonic_idx: int | None,
     mode: str | None,  # 'Major' | 'minor'
+    transients: str = "smooth",  # 'smooth' | 'crisp'
 ) -> dict:
     pitch_scale = 2 ** (semitones / 12)
     artifact_id = f"{uuid.uuid4()}.mp3"
@@ -30,7 +31,7 @@ async def key_shift_mp3(
             "-af", (
                 f"rubberband=pitch={pitch_scale:.6f}"
                 ":pitchq=quality"
-                ":transients=smooth"
+                f":transients={transients}"
                 ":phase=independent"
                 ":window=long"
                 ":smoothing=on"

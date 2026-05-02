@@ -1,4 +1,6 @@
 from fastapi import APIRouter
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 from app.api.schemas.response import ApiResponse
@@ -14,6 +16,7 @@ class KeyShiftRequest(BaseModel):
     semitones: int = Field(..., ge=-12, le=12)
     tonic_idx: int | None = None   # 0..11 (C..B), null = Unknown
     mode: str | None = None        # 'Major' | 'minor', null = Unknown
+    transients: Literal["smooth", "crisp"] = "smooth"
 
 
 @router.post("/key-shift")
@@ -36,6 +39,7 @@ async def key_shift_audio(body: KeyShiftRequest) -> ApiResponse:
             semitones=body.semitones,
             tonic_idx=body.tonic_idx,
             mode=body.mode,
+            transients=body.transients,
         )
     except RuntimeError:
         raise AppError(KEY_SHIFT_FAILED, "Key 변환 처리에 실패했습니다. 다른 파일로 다시 시도해 주세요.")

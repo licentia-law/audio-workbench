@@ -12,19 +12,23 @@ import type { UploadStatus } from '../../types'
 interface ActionBarProps {
   pageStatus: UploadStatus
   semi: number
+  transients: 'smooth' | 'crisp'
   resultPlaying: boolean
   onConvert: () => void
   onPlayResult: () => void
   onReset: () => void
+  onTransientsChange: (v: 'smooth' | 'crisp') => void
 }
 
 export function ActionBar({
   pageStatus,
   semi,
+  transients,
   resultPlaying,
   onConvert,
   onPlayResult,
   onReset,
+  onTransientsChange,
 }: ActionBarProps) {
   const noFile = pageStatus === 'empty'
   const processing = pageStatus === 'processing'
@@ -35,6 +39,28 @@ export function ActionBar({
   const resetDisabled = noFile || processing
 
   return (
+    <div className="space-y-3">
+      {/* Transients 토글 */}
+      <div className="flex items-center gap-3">
+        <span className="text-[12px] text-fg-muted font-medium">트랜지언트</span>
+        <div className="flex rounded-lg border border-line overflow-hidden text-[12px] font-medium">
+          {(['smooth', 'crisp'] as const).map((opt) => (
+            <button
+              key={opt}
+              disabled={processing}
+              onClick={() => onTransientsChange(opt)}
+              className={`px-3 py-1.5 transition-colors ${
+                transients === opt
+                  ? 'bg-ink-500 text-fg'
+                  : 'bg-ink-700 text-fg-muted hover:bg-ink-600'
+              } ${processing ? 'cursor-not-allowed' : ''}`}
+            >
+              {opt === 'smooth' ? 'Smooth (멜로디)' : 'Crisp (드럼/퍼커시브)'}
+            </button>
+          ))}
+        </div>
+      </div>
+
     <div className="grid grid-cols-3 gap-3">
       {/* 변환 실행 */}
       <button
@@ -80,6 +106,7 @@ export function ActionBar({
         <Icon name="reset" className="w-4 h-4" />
         초기화
       </button>
+    </div>
     </div>
   )
 }

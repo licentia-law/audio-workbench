@@ -64,6 +64,7 @@ export const apiService = {
     semitones: number,
     tonicIdx: number | null,
     mode: string | null,  // 'Major' | 'minor'
+    transients: 'smooth' | 'crisp' = 'smooth',
   ): Promise<KeyShiftResult> {
     const raw = await request<{
       artifact_id: string
@@ -78,6 +79,7 @@ export const apiService = {
         semitones,
         tonic_idx: tonicIdx,
         mode,
+        transients,
       }),
     })
     return {

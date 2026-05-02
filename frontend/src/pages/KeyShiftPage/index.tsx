@@ -24,6 +24,7 @@ export function KeyShiftPage() {
   const [analyzing,  setAnalyzing]  = useState(false)
 
   const { semi, set, reset } = useKeyShift()
+  const [transients, setTransients] = useState<'smooth' | 'crisp'>('smooth')
 
   // Original audio playback
   const origAudioSrc = uploadedFile ? `/api/file/${uploadedFile.file_id}/audio` : undefined
@@ -120,6 +121,7 @@ export function KeyShiftPage() {
         semi,
         isKeyUnknown ? null : tonicIdx,
         isKeyUnknown ? null : modeForFilename,
+        transients,
       )
       setResult(res)
       setPageStatus('success')
@@ -221,10 +223,12 @@ export function KeyShiftPage() {
       <ActionBar
         pageStatus={pageStatus}
         semi={semi}
+        transients={transients}
         resultPlaying={resultPlayback.isPlaying}
         onConvert={handleConvert}
         onPlayResult={handleResultPlayToggle}
         onReset={handleReset}
+        onTransientsChange={setTransients}
       />
 
       <ConversionResultCard
