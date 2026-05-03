@@ -28,7 +28,7 @@ class UploadService:
         duration = probe["duration_seconds"]
         if duration > settings.max_duration_seconds:
             dest.unlink(missing_ok=True)
-            raise AppError(FILE_TOO_LONG, "파일 길이는 10분 이하여야 합니다.")
+            raise AppError(FILE_TOO_LONG, "파일 길이는 15분 이하여야 합니다.")
 
         self._meta_store[file_id] = {
             "file_id": file_id,

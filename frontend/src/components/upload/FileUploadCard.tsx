@@ -5,7 +5,7 @@ import { apiService } from '../../services/api'
 import type { FileMeta, UploadStatus } from '../../types'
 
 const MAX_SIZE_BYTES = 20 * 1024 * 1024
-const MAX_DURATION_SEC = 600
+const MAX_DURATION_SEC = 900
 
 interface FileUploadCardProps {
   onSuccess?: (meta: FileMeta) => void
@@ -50,7 +50,7 @@ export function FileUploadCard({ onSuccess, onError }: FileUploadCardProps = {})
 
     const durationOk = await checkDuration(file)
     if (!durationOk) {
-      const msg = '파일 길이는 10분 이하여야 합니다.'
+      const msg = '파일 길이는 15분 이하여야 합니다.'
       setStatus('error')
       setErrorMsg(msg)
       onError?.(msg)
@@ -113,7 +113,7 @@ export function FileUploadCard({ onSuccess, onError }: FileUploadCardProps = {})
         <p className="text-sm text-gray-400">
           mp3 파일을 드래그하거나 <span className="text-accent font-medium">클릭하여 선택</span>하세요
         </p>
-        <p className="mt-1 text-xs text-gray-600">최대 20MB / 10분 이하</p>
+        <p className="mt-1 text-xs text-gray-600">최대 20MB / 15분 이하</p>
       </div>
 
       <input

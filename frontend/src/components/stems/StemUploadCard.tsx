@@ -22,7 +22,7 @@ interface StemUploadCardProps {
 }
 
 const MAX_SIZE     = 20 * 1024 * 1024
-const MAX_DURATION = 600
+const MAX_DURATION = 900
 
 async function checkDuration(file: File): Promise<boolean> {
   return new Promise(resolve => {
@@ -64,7 +64,7 @@ export function StemUploadCard({
       setLocalError(msg); onUploadError(msg); return
     }
     if (!(await checkDuration(file))) {
-      const msg = '파일 길이는 10분 이하여야 합니다.'
+      const msg = '파일 길이는 15분 이하여야 합니다.'
       setLocalError(msg); onUploadError(msg); return
     }
     try {
@@ -126,7 +126,7 @@ export function StemUploadCard({
           >
             파일 선택
           </button>
-          <div className="text-[11px] text-fg-dim mt-2.5">지원 형식: MP3 · 최대 10분 · 20MB</div>
+          <div className="text-[11px] text-fg-dim mt-2.5">지원 형식: MP3 · 최대 15분 · 20MB</div>
         </div>
         <input
           id="stem-file-input"

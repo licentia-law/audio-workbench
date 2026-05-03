@@ -107,7 +107,7 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
           <div className="flex gap-3 text-[12.5px] text-fg-dim">
             <span>MP3 전용</span>
             <span>·</span>
-            <span>최대 10분</span>
+            <span>최대 15분</span>
             <span>·</span>
             <span>최대 20MB</span>
           </div>

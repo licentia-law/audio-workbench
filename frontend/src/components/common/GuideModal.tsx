@@ -30,7 +30,7 @@ function routeToTab(pathname: string): TabKey {
 const COMMON_LIMITS = (
   <div className="flex gap-4 mt-2 mb-4 p-3 bg-ink-700/40 rounded-lg border border-line text-[12.5px] text-fg-dim">
     <span>📁 MP3 전용</span>
-    <span>⏱ 최대 10분</span>
+    <span>⏱ 최대 15분</span>
     <span>💾 최대 20MB</span>
   </div>
 )
