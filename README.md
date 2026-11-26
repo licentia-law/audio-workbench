@@ -25,6 +25,8 @@ python -m demucs --help
 
 ## 실행
 
+MacBook에서 개발을 이어가는 경우 [MacBook 이관 가이드](docs/manual/macos-handoff.md)를 참고하세요.
+
 ```powershell
 # 백엔드 먼저 (port 8000)
 .\scripts\run_backend.ps1
